@@ -181,6 +181,10 @@ export function getMostRecentDraft(): OutingPlan | null {
   return _drafts[0] ?? null;
 }
 
+export function getDraftById(id: string): OutingPlan | undefined {
+  return _drafts.find((d) => d.id === id);
+}
+
 function resetToUnusedVariant(): void {
   const nextVariant: OutingVariant = _currentPlan.variant === 'initial' ? 'alternate' : 'initial';
   const nextBase = nextVariant === 'initial' ? INITIAL_PLAN : ALTERNATE_PLAN;
@@ -190,6 +194,7 @@ function resetToUnusedVariant(): void {
 export function saveDraftFromCurrent(): { success: boolean; capReached: boolean } {
   const draft: OutingPlan = {
     ..._currentPlan,
+    id: `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     stops: [..._currentPlan.stops],
     isDraft: true,
     lastEdited: Date.now(),
