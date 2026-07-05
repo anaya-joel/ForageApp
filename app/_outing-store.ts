@@ -207,7 +207,6 @@ export function saveDraftFromCurrent(): { success: boolean; capReached: boolean 
   if (existingIdx !== -1) {
     _drafts[existingIdx] = draft;
     _drafts.sort((a, b) => (b.lastEdited ?? 0) - (a.lastEdited ?? 0));
-    console.log('AFTER UPDATE:', _drafts.map(d => d.id));
     resetToUnusedVariant();
     return { success: true, capReached: false };
   }
@@ -218,7 +217,6 @@ export function saveDraftFromCurrent(): { success: boolean; capReached: boolean 
 
   _drafts.push(draft);
   _drafts.sort((a, b) => (b.lastEdited ?? 0) - (a.lastEdited ?? 0));
-  console.log('AFTER PUSH:', _drafts.map(d => d.id));
   resetToUnusedVariant();
   return { success: true, capReached: false };
 }
