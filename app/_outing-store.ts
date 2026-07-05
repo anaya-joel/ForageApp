@@ -192,18 +192,22 @@ function resetToUnusedVariant(): void {
 }
 
 export function saveDraftFromCurrent(): { success: boolean; capReached: boolean } {
+  const existingIdx = _drafts.findIndex((d) => d.id === _currentPlan.id);
+
   const draft: OutingPlan = {
     ..._currentPlan,
-    id: `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: existingIdx !== -1
+      ? _drafts[existingIdx].id
+      : `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     stops: [..._currentPlan.stops],
     isDraft: true,
     lastEdited: Date.now(),
   };
 
-  const existingIdx = _drafts.findIndex((d) => d.id === _currentPlan.id);
   if (existingIdx !== -1) {
     _drafts[existingIdx] = draft;
     _drafts.sort((a, b) => (b.lastEdited ?? 0) - (a.lastEdited ?? 0));
+    console.log('AFTER UPDATE:', _drafts.map(d => d.id));
     resetToUnusedVariant();
     return { success: true, capReached: false };
   }
@@ -214,6 +218,7 @@ export function saveDraftFromCurrent(): { success: boolean; capReached: boolean 
 
   _drafts.push(draft);
   _drafts.sort((a, b) => (b.lastEdited ?? 0) - (a.lastEdited ?? 0));
+  console.log('AFTER PUSH:', _drafts.map(d => d.id));
   resetToUnusedVariant();
   return { success: true, capReached: false };
 }
