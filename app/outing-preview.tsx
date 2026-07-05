@@ -10,8 +10,19 @@ import {
   PlusJakartaSans_600SemiBold,
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { useFonts } from 'expo-font';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { setCurrentOutingName, setCurrentOutingVariant, getCurrentOutingVariant } from './_outing-store';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import {
+  getCurrentPlan,
+  getDraftById,
+  setCurrentPlan,
+  saveDraftFromCurrent,
+  beginOuting,
+  INITIAL_PLAN,
+  ALTERNATE_PLAN,
+  type OutingPlan,
+  type Stop,
+  type TransportMode,
+} from './_outing-store';
 import {
   Bus,
   Car,
@@ -80,18 +91,6 @@ const F = {
 //  TYPES
 // ─────────────────────────────────────────
 
-type TransportMode = 'walk' | 'drive' | 'transit';
-
-type Stop = {
-  id: string;
-  name: string;
-  category: string;
-  color: string;
-  description: string;
-  neighborhood: string;
-  priceTier: string;
-  connector?: { mode: TransportMode; time: string };
-};
 
 type CuratedPlace = {
   id: string;
@@ -103,101 +102,7 @@ type CuratedPlace = {
   priceTier: string;
 };
 
-// ─────────────────────────────────────────
-//  SAMPLE DATA
-// ─────────────────────────────────────────
 
-const INITIAL_STOPS: Stop[] = [
-  {
-    id: '1',
-    name: 'Compass Coffee',
-    category: 'COFFEE & CAFÉS',
-    color: C.coffee,
-    neighborhood: 'Shaw',
-    priceTier: '$',
-    description:
-      'A Shaw neighborhood staple known for its single-origin pour-overs and cozy brick interior with exposed beams.',
-    connector: { mode: 'walk', time: '8 min walk' },
-  },
-  {
-    id: '2',
-    name: 'Hirshhorn Museum',
-    category: 'ARTS & CULTURE',
-    color: C.arts,
-    neighborhood: 'National Mall',
-    priceTier: 'Free',
-    description:
-      "DC's modern and contemporary art museum set inside a striking cylindrical building on the National Mall.",
-    connector: { mode: 'walk', time: '14 min walk' },
-  },
-  {
-    id: '3',
-    name: 'National Mall',
-    category: 'OUTDOORS',
-    color: C.outdoors,
-    neighborhood: 'Downtown',
-    priceTier: 'Free',
-    description:
-      'Stroll the iconic 2-mile greenway flanked by world-class museums and memorials. Best midday light here.',
-    connector: { mode: 'walk', time: '20 min walk' },
-  },
-  {
-    id: '4',
-    name: 'The Dabney',
-    category: 'EAT & DRINK',
-    color: C.eat,
-    neighborhood: 'Shaw',
-    priceTier: '$$$',
-    description:
-      "A James Beard–nominated restaurant celebrating the Mid-Atlantic's finest ingredients over a wood-burning hearth.",
-  },
-];
-
-const ALTERNATE_STOPS: Stop[] = [
-  {
-    id: 'a1',
-    name: 'Bluestone Lane',
-    category: 'COFFEE & CAFÉS',
-    color: C.coffee,
-    neighborhood: 'Logan Circle',
-    priceTier: '$$',
-    description:
-      'Australian-style café known for specialty espresso drinks and all-day avocado toast in a light-filled space.',
-    connector: { mode: 'walk', time: '6 min walk' },
-  },
-  {
-    id: 'a2',
-    name: 'National Portrait Gallery',
-    category: 'ARTS & CULTURE',
-    color: C.arts,
-    neighborhood: 'Penn Quarter',
-    priceTier: 'Free',
-    description:
-      'Presidential portraits and bold contemporary commissions inside a stunning neoclassical palace.',
-    connector: { mode: 'transit', time: '18 min ride' },
-  },
-  {
-    id: 'a3',
-    name: 'Eastern Market',
-    category: 'MARKETS',
-    color: C.markets,
-    neighborhood: 'Capitol Hill',
-    priceTier: '$',
-    description:
-      "Capitol Hill's historic market with weekend vendors, local produce, and handcrafted goods since 1873.",
-    connector: { mode: 'walk', time: '10 min walk' },
-  },
-  {
-    id: 'a4',
-    name: 'Cranes',
-    category: 'EAT & DRINK',
-    color: C.eat,
-    neighborhood: 'Penn Quarter',
-    priceTier: '$$$',
-    description:
-      'Japanese-Spanish kaiseki cuisine in a serene Penn Quarter setting — best seats at the omakase counter.',
-  },
-];
 
 export const CURATED_PLACES: CuratedPlace[] = [
   { id: 'c1',  name: 'Bluestone Lane',            category: 'COFFEE & CAFÉS', color: C.coffee,    neighborhood: 'Logan Circle',     priceTier: '$$',   description: 'Australian-style café with specialty espresso drinks and all-day avocado toast.' },
@@ -214,8 +119,6 @@ export const CURATED_PLACES: CuratedPlace[] = [
   { id: 'c12', name: 'Flash Nightclub',            category: 'NIGHTLIFE',      color: C.nightlife, neighborhood: 'Penn Quarter',     priceTier: '$$',   description: "DC's premier underground electronic music venue with world-class DJs." },
 ];
 
-const INITIAL_OUTING_NAME   = 'DC Art & Coffee Loop';
-const ALTERNATE_OUTING_NAME = 'Capitol Hill Culture Day';
 
 // ─────────────────────────────────────────
 //  HELPERS
@@ -249,26 +152,6 @@ function tierRange(stops: Stop[]): string {
   const min = sorted[0];
   const max = sorted[sorted.length - 1];
   return min === max ? min : `${min}–${max}`;
-}
-
-function getScoutCopy(stops: Stop[]): string {
-  const cats        = stops.map((s) => s.category);
-  const hasCoffee   = cats.some((c) => c.includes('COFFEE'));
-  const hasArts     = cats.some((c) => c.includes('ARTS'));
-  const hasEat      = cats.some((c) => c.includes('EAT'));
-  const hasOutdoors = cats.some((c) => c.includes('OUTDOORS'));
-
-  if (hasCoffee && hasArts && hasEat && hasOutdoors)
-    return "Coffee, culture, open air, and a proper meal.";
-  if (hasCoffee && hasArts && hasEat)
-    return "Coffee first, something worth seeing, then somewhere worth the splurge.";
-  if (hasCoffee && hasArts)
-    return "Caffeine first, then the kind of art that stays with you.";
-  if (hasOutdoors && hasEat)
-    return "Outside first, then somewhere worth the meal.";
-  if (hasCoffee && hasOutdoors)
-    return "Coffee and open air — a route for when you want the city without the noise.";
-  return "A well-rounded route, assembled stop by stop.";
 }
 
 // ─────────────────────────────────────────
@@ -321,7 +204,6 @@ function DirtyBackSheet({
 //  DRAFT CAP MODAL
 // ─────────────────────────────────────────
 
-const DRAFT_CAP = 5;
 
 function DraftCapModal({
   visible,
@@ -689,6 +571,7 @@ function PlaceDetailModal({
 export default function OutingPreviewScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { draftId } = useLocalSearchParams<{ draftId?: string }>();
 
   const [fontsLoaded, fontError] = useFonts({
     LibreBaskerville_700Bold,
@@ -697,29 +580,39 @@ export default function OutingPreviewScreen() {
     PlusJakartaSans_600SemiBold,
   });
 
-  const [outingName, setOutingName]         = useState(() => getCurrentOutingVariant() === 'alternate' ? ALTERNATE_OUTING_NAME : INITIAL_OUTING_NAME);
+  const [plan, setPlan]                     = useState<OutingPlan>(() => {
+    if (draftId) {
+      const draft = getDraftById(draftId);
+      if (!draft) {
+        console.warn(`[outing-preview] Draft "${draftId}" not found, falling back to current plan`);
+        return getCurrentPlan();
+      }
+      return draft;
+    }
+    return getCurrentPlan();
+  });
   const [isEditingName, setIsEditingName]   = useState(false);
+  const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editMode, setEditMode]             = useState(false);
   const [isDirty, setIsDirty]               = useState(false);
-  const [stops, setStops]                   = useState<Stop[]>(() => getCurrentOutingVariant() === 'alternate' ? ALTERNATE_STOPS : INITIAL_STOPS);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [showDirtySheet, setShowDirtySheet] = useState(false);
   const [showAddSheet, setShowAddSheet]     = useState(false);
   const [savedPlaceIds, setSavedPlaceIds]   = useState<Set<string>>(new Set());
   const [detailStop, setDetailStop]         = useState<Stop | null>(null);
-  const [addDetailPlace, setAddDetailPlace] = useState<CuratedPlace | null>(null);
-  const [draftCount, setDraftCount]         = useState(0);
   const [showDraftCapModal, setShowDraftCapModal] = useState(false);
+  const [addDetailPlace, setAddDetailPlace] = useState<CuratedPlace | null>(null);
 
-  const originalStopsRef = useRef<Stop[]>(getCurrentOutingVariant() === 'alternate' ? ALTERNATE_STOPS : INITIAL_STOPS);
-  const originalNameRef  = useRef<string>(getCurrentOutingVariant() === 'alternate' ? ALTERNATE_OUTING_NAME : INITIAL_OUTING_NAME);
+  const originalPlanRef = useRef<OutingPlan>(
+    draftId ? (getDraftById(draftId) ?? getCurrentPlan()) : getCurrentPlan()
+  );
 
   useFocusEffect(
     useCallback(() => {
       const pending = consumePendingSwap();
       if (!pending) return;
-      setStops((s) =>
-        s.map((stop) =>
+      setPlan((p) => {
+        const newStops = p.stops.map((stop) =>
           stop.id === pending.stopId
             ? {
                 ...stop,
@@ -732,8 +625,11 @@ export default function OutingPreviewScreen() {
                 priceTier:    pending.place.priceTier,
               }
             : stop
-        )
-      );
+        );
+        const updated = { ...p, stops: newStops };
+        setCurrentPlan(updated);
+        return updated;
+      });
       setIsDirty(true);
     }, [])
   );
@@ -755,23 +651,25 @@ export default function OutingPreviewScreen() {
   }
 
   function handleResetToScout() {
-    setStops(originalStopsRef.current);
+    setPlan(originalPlanRef.current);
+    setCurrentPlan(originalPlanRef.current);
     setIsDirty(false);
   }
 
   function handleSaveDraft() {
     setShowDirtySheet(false);
-    if (draftCount >= DRAFT_CAP) {
+    setCurrentPlan(plan);
+    const result = saveDraftFromCurrent();
+    if (result.capReached) {
       setShowDraftCapModal(true);
     } else {
-      setDraftCount((c) => c + 1);
       router.back();
     }
   }
 
   function handleDiscard() {
-    setStops(originalStopsRef.current);
-    setOutingName(originalNameRef.current);
+    setPlan(originalPlanRef.current);
+    setCurrentPlan(originalPlanRef.current);
     setIsDirty(false);
     setEditMode(false);
     setShowDirtySheet(false);
@@ -779,30 +677,29 @@ export default function OutingPreviewScreen() {
 
   function handleGenerate() {
     setIsRegenerating(true);
-    const isCurrentlyInitial = stops[0]?.id === INITIAL_STOPS[0]?.id;
-    const next        = isCurrentlyInitial ? ALTERNATE_STOPS : INITIAL_STOPS;
-    const nextName    = isCurrentlyInitial ? ALTERNATE_OUTING_NAME : INITIAL_OUTING_NAME;
-    const nextVariant = isCurrentlyInitial ? 'alternate' : 'initial';
+    const next = plan.variant === 'initial' ? ALTERNATE_PLAN : INITIAL_PLAN;
+    const nextCopy: OutingPlan = { ...next, stops: [...next.stops] };
     setTimeout(() => {
-      setStops(next);
-      setOutingName(nextName);
-      originalStopsRef.current = next;
-      originalNameRef.current  = nextName;
-      setCurrentOutingName(nextName);
-      setCurrentOutingVariant(nextVariant);
+      setPlan(nextCopy);
+      setCurrentPlan(nextCopy);
+      originalPlanRef.current = nextCopy;
       setIsDirty(false);
       setIsRegenerating(false);
-      setEditMode(false); // discard any in-progress edits, return to Full Details
+      setEditMode(false);
     }, 1800);
   }
 
   function handleRemoveStop(id: string) {
-    setStops((s) => s.filter((stop) => stop.id !== id));
+    setPlan((p) => {
+      const updated = { ...p, stops: p.stops.filter((stop) => stop.id !== id) };
+      setCurrentPlan(updated);
+      return updated;
+    });
     setIsDirty(true);
   }
 
   function handleOpenSwap(stop: Stop, index: number) {
-    const prevConnector = index > 0 ? stops[index - 1].connector : undefined;
+    const prevConnector = index > 0 ? plan.stops[index - 1].connector : undefined;
     const travelHint = prevConnector?.time ?? stop.connector?.time ?? '10 min walk';
     router.push({
       pathname: '/swap-stop',
@@ -826,15 +723,17 @@ export default function OutingPreviewScreen() {
       priceTier:    place.priceTier,
       connector:    { mode: 'walk', time: '10 min walk' },
     };
-    setStops((s) => {
-      const updated = [...s];
+    setPlan((p) => {
+      const updated = [...p.stops];
       if (updated.length > 0) {
         updated[updated.length - 1] = {
           ...updated[updated.length - 1],
           connector: { mode: 'walk', time: '10 min walk' },
         };
       }
-      return [...updated, { ...newStop, connector: undefined }];
+      const newPlan = { ...p, stops: [...updated, { ...newStop, connector: undefined }] };
+      setCurrentPlan(newPlan);
+      return newPlan;
     });
     setIsDirty(true);
   }
@@ -845,7 +744,9 @@ export default function OutingPreviewScreen() {
   }
 
   function handleBegin() {
-    router.back();
+    setCurrentPlan(plan);
+    beginOuting();
+    router.replace('/active-outing');
   }
 
   function handleToggleSave(id: string) {
@@ -857,9 +758,8 @@ export default function OutingPreviewScreen() {
     });
   }
 
-  const hrs   = estimatedHrs(stops);
-  const tiers = tierRange(stops);
-  const copy  = getScoutCopy(stops);
+  const hrs   = estimatedHrs(plan.stops);
+  const tiers = tierRange(plan.stops);
 
   return (
     <View style={[styles.screen, { backgroundColor: C.bg }]}>
@@ -877,48 +777,75 @@ export default function OutingPreviewScreen() {
           </Pressable>
 
           <View style={styles.headerContent}>
-            {editMode ? (
-              <>
-                <Text style={styles.editModeTitle}>Edit your plan</Text>
-                <Text style={styles.editModeSubheader}>Reorder, swap, or add stops.</Text>
-              </>
-            ) : isEditingName ? (
-              <>
-                <TextInput
-                  style={styles.outingNameInput}
-                  value={outingName}
-                  onChangeText={setOutingName}
-                  autoFocus
-                  returnKeyType="done"
-                  onSubmitEditing={() => setIsEditingName(false)}
-                  onBlur={() => setIsEditingName(false)}
-                  selectTextOnFocus
-                />
-                <View style={styles.pillsRow}>
-                  <View style={styles.pill}><Text style={styles.pillText}>{stops.length} stops</Text></View>
-                  <View style={styles.pill}><Text style={styles.pillText}>~{hrs} hrs</Text></View>
-                  <View style={styles.pill}><Text style={styles.pillText}>{tiers}</Text></View>
-                </View>
-                <Text style={styles.headerCaption}>{copy}</Text>
-              </>
+            {editMode && isEditingName ? (
+              <TextInput
+                style={styles.outingNameInput}
+                value={plan.name}
+                onChangeText={(text) => {
+                  setPlan((p) => {
+                    const updated = { ...p, name: text };
+                    setCurrentPlan(updated);
+                    return updated;
+                  });
+                  setIsDirty(true);
+                }}
+                autoFocus
+                returnKeyType="done"
+                onSubmitEditing={() => setIsEditingName(false)}
+                onBlur={() => setIsEditingName(false)}
+                selectTextOnFocus
+              />
             ) : (
-              <>
-                <View style={styles.namePencilRow}>
-                  <Text style={styles.outingName} numberOfLines={1} ellipsizeMode="tail">{outingName}</Text>
+              <View style={styles.namePencilRow}>
+                <Text style={styles.outingName} numberOfLines={1} ellipsizeMode="tail">{plan.name}</Text>
+                {editMode && (
                   <Pressable
                     onPress={() => setIsEditingName(true)}
                     hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
                   >
                     <Pencil size={14} color={C.textTert} />
                   </Pressable>
-                </View>
-                <View style={styles.pillsRow}>
-                  <View style={styles.pill}><Text style={styles.pillText}>{stops.length} stops</Text></View>
-                  <View style={styles.pill}><Text style={styles.pillText}>~{hrs} hrs</Text></View>
-                  <View style={styles.pill}><Text style={styles.pillText}>{tiers}</Text></View>
-                </View>
-                <Text style={styles.headerCaption}>{copy}</Text>
-              </>
+                )}
+              </View>
+            )}
+
+            <View style={styles.pillsRow}>
+              <View style={styles.pill}><Text style={styles.pillText}>{plan.stops.length} stops</Text></View>
+              <View style={styles.pill}><Text style={styles.pillText}>~{hrs} hrs</Text></View>
+              <View style={styles.pill}><Text style={styles.pillText}>{tiers}</Text></View>
+            </View>
+
+            {editMode && isEditingCaption ? (
+              <TextInput
+                style={styles.captionInput}
+                value={plan.caption}
+                onChangeText={(text) => {
+                  setPlan((p) => {
+                    const updated = { ...p, caption: text };
+                    setCurrentPlan(updated);
+                    return updated;
+                  });
+                  setIsDirty(true);
+                }}
+                autoFocus
+                multiline
+                returnKeyType="done"
+                onSubmitEditing={() => setIsEditingCaption(false)}
+                onBlur={() => setIsEditingCaption(false)}
+                selectTextOnFocus
+              />
+            ) : (
+              <View style={styles.captionPencilRow}>
+                <Text style={styles.headerCaption}>{plan.caption}</Text>
+                {editMode && (
+                  <Pressable
+                    onPress={() => setIsEditingCaption(true)}
+                    hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                  >
+                    <Pencil size={12} color={C.textTert} />
+                  </Pressable>
+                )}
+              </View>
             )}
           </View>
         </View>
@@ -938,7 +865,7 @@ export default function OutingPreviewScreen() {
           <RegeneratingState />
         ) : (
           <>
-            {stops.map((stop, index) => (
+            {plan.stops.map((stop, index) => (
               <React.Fragment key={stop.id}>
                 <StopCard
                   stop={stop}
@@ -947,7 +874,7 @@ export default function OutingPreviewScreen() {
                   onRemove={() => handleRemoveStop(stop.id)}
                   onPress={() => setDetailStop(stop)}
                 />
-                {index < stops.length - 1 && stop.connector && (
+                {index < plan.stops.length - 1 && stop.connector && (
                   <ConnectorStrip connector={stop.connector} />
                 )}
               </React.Fragment>
@@ -1008,10 +935,10 @@ export default function OutingPreviewScreen() {
         visible={showAddSheet}
         onClose={() => setShowAddSheet(false)}
         onSelectForDetail={handleSelectForDetail}
-        currentStops={stops}
+        currentStops={plan.stops}
       />
 
-      {/* ── PLACE DETAIL MODAL (existing stop tap) ── */}
+      {/* ── PLACE DETAIL MODAL ── */}
       <PlaceDetailModal
         stop={detailStop}
         isSaved={detailStop ? savedPlaceIds.has(detailStop.id) : false}
@@ -1019,12 +946,12 @@ export default function OutingPreviewScreen() {
         onClose={() => setDetailStop(null)}
       />
 
-      {/* ── PLACE DETAIL MODAL (add-stop flow) ── */}
+      {/* ── ADD-STOP DETAIL MODAL ── */}
       <PlaceDetailModal
         stop={addDetailPlace as Stop | null}
         isSaved={addDetailPlace ? savedPlaceIds.has(addDetailPlace.id) : false}
         onSave={() => addDetailPlace && handleToggleSave(addDetailPlace.id)}
-        onClose={() => setAddDetailPlace(null)}
+        onClose={() => { setAddDetailPlace(null); setShowAddSheet(true); }}
         onAddStop={addDetailPlace ? () => { handleAddPlace(addDetailPlace); setAddDetailPlace(null); } : undefined}
       />
     </View>
@@ -1085,6 +1012,22 @@ const styles = StyleSheet.create({
     borderBottomColor: C.amber,
     marginBottom: 0,
   },
+  captionPencilRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 8,
+  },
+  captionInput: {
+    fontFamily: F.med,
+    fontSize: 13,
+    color: C.textSec,
+    lineHeight: 20,
+    marginTop: 8,
+    paddingVertical: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: C.amber,
+  },
 
   // Pills row (stop count / duration / price)
   pillsRow: {
@@ -1111,19 +1054,6 @@ const styles = StyleSheet.create({
     color: C.textSec,
     lineHeight: 20,
     marginTop: 8,
-  },
-
-  editModeTitle: {
-    fontFamily: F.serif,
-    fontSize: 24,
-    color: C.textPrimary,
-    lineHeight: 30,
-  },
-  editModeSubheader: {
-    fontFamily: F.reg,
-    fontSize: 13,
-    color: C.textSec,
-    marginTop: 4,
   },
 
   // ── Scroll ──
