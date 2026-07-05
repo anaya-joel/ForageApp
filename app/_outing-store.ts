@@ -25,6 +25,9 @@ export type OutingPlan = {
   variant: OutingVariant;
   isDraft: boolean;
   lastEdited: number | null;
+  hasBegun: boolean;
+  startTime: number | null;
+  currentStopIndex: number;
 };
 
 // ─────────────────────────────────────────
@@ -38,6 +41,9 @@ export const INITIAL_PLAN: OutingPlan = {
   variant: 'initial',
   isDraft: false,
   lastEdited: null,
+  hasBegun: false,
+  startTime: null,
+  currentStopIndex: 0,
   stops: [
     {
       id: '1',
@@ -92,6 +98,9 @@ export const ALTERNATE_PLAN: OutingPlan = {
   variant: 'alternate',
   isDraft: false,
   lastEdited: null,
+  hasBegun: false,
+  startTime: null,
+  currentStopIndex: 0,
   stops: [
     {
       id: 'a1',
@@ -172,6 +181,12 @@ export function getMostRecentDraft(): OutingPlan | null {
   return _drafts[0] ?? null;
 }
 
+function resetToUnusedVariant(): void {
+  const nextVariant: OutingVariant = _currentPlan.variant === 'initial' ? 'alternate' : 'initial';
+  const nextBase = nextVariant === 'initial' ? INITIAL_PLAN : ALTERNATE_PLAN;
+  _currentPlan = { ...nextBase, stops: [...nextBase.stops] };
+}
+
 export function saveDraftFromCurrent(): { success: boolean; capReached: boolean } {
   const draft: OutingPlan = {
     ..._currentPlan,
@@ -184,6 +199,7 @@ export function saveDraftFromCurrent(): { success: boolean; capReached: boolean 
   if (existingIdx !== -1) {
     _drafts[existingIdx] = draft;
     _drafts.sort((a, b) => (b.lastEdited ?? 0) - (a.lastEdited ?? 0));
+    resetToUnusedVariant();
     return { success: true, capReached: false };
   }
 
@@ -193,7 +209,15 @@ export function saveDraftFromCurrent(): { success: boolean; capReached: boolean 
 
   _drafts.push(draft);
   _drafts.sort((a, b) => (b.lastEdited ?? 0) - (a.lastEdited ?? 0));
+  resetToUnusedVariant();
   return { success: true, capReached: false };
+}
+
+export function hasAllVariantsExhausted(): boolean {
+  return (
+    _drafts.some((d) => d.id === 'plan-initial') &&
+    _drafts.some((d) => d.id === 'plan-alternate')
+  );
 }
 
 export function deleteDraft(id: string): void {
@@ -210,4 +234,42 @@ export function getCurrentOutingName(): string {
 
 export function setCurrentOutingName(name: string): void {
   _currentPlan = { ..._currentPlan, name };
+}
+
+// ─────────────────────────────────────────
+//  ACTIVE OUTING API
+// ─────────────────────────────────────────
+
+export function beginOuting(): void {
+  _currentPlan = {
+    ..._currentPlan,
+    hasBegun: true,
+    startTime: Date.now(),
+    currentStopIndex: 0,
+  };
+}
+
+export function completeCurrentStop(): void {
+  _currentPlan = {
+    ..._currentPlan,
+    currentStopIndex: Math.min(_currentPlan.currentStopIndex + 1, _currentPlan.stops.length),
+  };
+}
+
+export function goToPreviousStop(): void {
+  _currentPlan = {
+    ..._currentPlan,
+    currentStopIndex: Math.max(_currentPlan.currentStopIndex - 1, 0),
+  };
+}
+
+export function endOuting(): void {
+  _currentPlan = {
+    ..._currentPlan,
+    hasBegun: false,
+  };
+}
+
+export function isOutingComplete(): boolean {
+  return _currentPlan.currentStopIndex >= _currentPlan.stops.length;
 }
