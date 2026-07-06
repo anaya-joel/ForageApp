@@ -15,7 +15,7 @@ export type Stop = {
   connector?: { mode: TransportMode; time: string };
 };
 
-export type OutingVariant = 'initial' | 'alternate';
+export type OutingVariant = 'initial' | 'alternate' | 'generated';
 
 export type OutingPlan = {
   id: string;
