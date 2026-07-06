@@ -39,7 +39,7 @@ import { getCatIcon } from './_category-icons';
 import { C } from '../data/colors';
 import { VENUES, type Venue } from '../data/venues';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   getCurrentPlan,
   getDrafts,
@@ -262,23 +262,93 @@ function ScoutCard({ onPress, plan }: PressHandlerProps & { plan: OutingPlan }) 
 //  FOR YOU SECTION  (all states)
 // ─────────────────────────────────────────
 
+const FOR_YOU_COUNT = 6;
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/** Randomly picks up to `count` venues, round-robining across categories so the result isn't dominated by one category. */
+function pickForYouVenues(venues: Venue[], count: number): Venue[] {
+  const byCategory = new Map<string, Venue[]>();
+  for (const v of venues) {
+    const list = byCategory.get(v.category) ?? [];
+    list.push(v);
+    byCategory.set(v.category, list);
+  }
+  const groups = shuffle([...byCategory.values()]).map(shuffle);
+
+  const result: Venue[] = [];
+  let i = 0;
+  while (result.length < count && groups.some(g => g.length > 0)) {
+    const group = groups[i % groups.length];
+    if (group.length > 0) result.push(group.shift()!);
+    i++;
+  }
+  return result;
+}
+
+/** In-memory only — matches the existing accepted gap of no persistence elsewhere in this file. */
+let forYouCache: { date: string; venueIds: string[] } | null = null;
+
+function getLocalDateString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/** Picks the day's For You venues once and reuses them for every render/mount that day. */
+function getDailyForYouSelection(): Venue[] {
+  const today = getLocalDateString(new Date());
+  if (forYouCache && forYouCache.date === today) {
+    const byId = new Map(VENUES.map(v => [v.id, v] as const));
+    const cached = forYouCache.venueIds.map(id => byId.get(id)).filter((v): v is Venue => v != null);
+    if (cached.length === forYouCache.venueIds.length) return cached;
+  }
+  const selection = pickForYouVenues(VENUES, FOR_YOU_COUNT);
+  forYouCache = { date: today, venueIds: selection.map(v => v.id) };
+  return selection;
+}
+
 function ForYouSection() {
+  const items = useMemo(() => getDailyForYouSelection(), []);
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <View style={styles.sectionBlock}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>For You</Text>
-        <Text style={styles.seeAll}>See all ›</Text>
+        <Pressable
+          onPress={() => setExpanded(e => !e)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Text style={styles.seeAll}>{expanded ? 'Show less ‹' : 'See all ›'}</Text>
+        </Pressable>
       </View>
-      <FlatList
-        data={VENUES}
-        keyExtractor={item => item.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.fyRow}
-        renderItem={({ item }) => <ForYouCard item={item} />}
-        snapToInterval={170} // card width 160 + gap 10
-        decelerationRate="fast"
-      />
+      {expanded ? (
+        <View style={styles.fyGrid}>
+          {VENUES.map(item => (
+            <ForYouCard key={item.id} item={item} />
+          ))}
+        </View>
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={item => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.fyRow}
+          renderItem={({ item }) => <ForYouCard item={item} />}
+          snapToInterval={170} // card width 160 + gap 10
+          decelerationRate="fast"
+        />
+      )}
     </View>
   );
 }
@@ -860,6 +930,11 @@ const styles = StyleSheet.create({
   },
   fyRow: {
     paddingRight: 14,
+    gap: 10,
+  },
+  fyGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
   },
   fyCard: {
