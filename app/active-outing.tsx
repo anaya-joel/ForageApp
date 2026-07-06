@@ -162,7 +162,7 @@ function TransportConnector({ options }: { options: TransportOpt[] }) {
 
   return (
     <View style={styles.transConnector}>
-      <View style={styles.transConnLineTop} />
+      <View style={styles.transConnLine} />
       <Pressable
         onPress={() => setExpanded(e => !e)}
         hitSlop={{ top: 6, bottom: 6, left: 20, right: 20 }}
@@ -187,9 +187,7 @@ function TransportConnector({ options }: { options: TransportOpt[] }) {
           })}
         </View>
       </Pressable>
-      <Svg width={1.5} height={12}>
-        <Line x1="0.75" y1="0" x2="0.75" y2="12" stroke={C.textTert} strokeWidth={1.5} strokeDasharray="3 4" />
-      </Svg>
+      <View style={styles.transConnLine} />
     </View>
   );
 }
@@ -611,7 +609,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 0,
   },
-  transConnLineTop: {
+  transConnLine: {
     width: 1.5,
     height: 12,
     backgroundColor: C.amber,
