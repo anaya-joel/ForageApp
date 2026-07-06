@@ -25,17 +25,13 @@ import {
   Bus,
   Car,
   Clock,
-  Coffee,
   Footprints,
   Heart,
   House,
-  Leaf,
   MapPin,
-  Moon,
   Navigation,
-  Palette,
-  Utensils,
 } from 'lucide-react-native';
+import { getCatIcon } from './_category-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Pressable,
@@ -46,6 +42,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Line, Svg } from 'react-native-svg';
 
 // ─────────────────────────────────────────
 //  DESIGN TOKENS
@@ -85,14 +82,6 @@ const F = {
 //  HELPERS
 // ─────────────────────────────────────────
 
-function getCatIcon(category: string): React.ComponentType<{ size: number; color: string }> {
-  if (category.includes('EAT') || category.includes('DRINK')) return Utensils;
-  if (category.includes('COFFEE'))                            return Coffee;
-  if (category.includes('ARTS') || category.includes('CULTURE')) return Palette;
-  if (category.includes('OUTDOORS'))                          return Leaf;
-  if (category.includes('NIGHTLIFE'))                         return Moon;
-  return MapPin;
-}
 
 // ─────────────────────────────────────────
 //  TYPES
@@ -109,6 +98,19 @@ type TransportOpt = {
 // ─────────────────────────────────────────
 //  PROGRESS STRIP
 // ─────────────────────────────────────────
+
+function DashedHLine() {
+  const [w, setW] = useState(0);
+  return (
+    <View style={styles.progLine} onLayout={e => setW(e.nativeEvent.layout.width)}>
+      {w > 0 && (
+        <Svg width={w} height={1.5}>
+          <Line x1="0" y1="0.75" x2={w} y2="0.75" stroke={C.textTert} strokeWidth={1.5} strokeDasharray="3 6" />
+        </Svg>
+      )}
+    </View>
+  );
+}
 
 function ProgressStrip({ total, completed }: { total: number; completed: number }) {
   return (
@@ -138,13 +140,7 @@ function ProgressStrip({ total, completed }: { total: number; completed: number 
             {i < total - 1 && (
               i < completed
                 ? <View style={[styles.progLine, styles.progLineDone]} />
-                : (
-                  <View style={[styles.progLine, styles.progLineUpcomingBase]}>
-                    {Array.from({ length: 60 }, (_, j) => (
-                      <View key={j} style={styles.progDash} />
-                    ))}
-                  </View>
-                )
+                : <DashedHLine />
             )}
           </React.Fragment>
         );
@@ -166,7 +162,7 @@ function TransportConnector({ options }: { options: TransportOpt[] }) {
 
   return (
     <View style={styles.transConnector}>
-      <View style={styles.transConnectorLine} />
+      <View style={styles.transConnLineTop} />
       <Pressable
         onPress={() => setExpanded(e => !e)}
         hitSlop={{ top: 6, bottom: 6, left: 20, right: 20 }}
@@ -191,7 +187,9 @@ function TransportConnector({ options }: { options: TransportOpt[] }) {
           })}
         </View>
       </Pressable>
-      <View style={styles.transConnectorLine} />
+      <Svg width={1.5} height={12}>
+        <Line x1="0.75" y1="0" x2="0.75" y2="12" stroke={C.textTert} strokeWidth={1.5} strokeDasharray="3 4" />
+      </Svg>
     </View>
   );
 }
@@ -315,7 +313,7 @@ const transportOptions: TransportOpt[] = connector ? [
       >
 
         {/* ── CURRENT STOP BLOCK ── */}
-        <View style={styles.stopBlock}>
+        <View style={[styles.stopBlock, !(nextStop && transportOptions.length > 0) && { marginBottom: 12 }]}>
 
           {/* Photo placeholder */}
           <View style={[styles.stopPhoto, { backgroundColor: currentStop.color + '22' }]}>
@@ -342,13 +340,6 @@ const transportOptions: TransportOpt[] = connector ? [
           <View style={styles.stopInfo}>
             <Text style={styles.stopName}>{currentStop.name}</Text>
 
-            <View style={styles.metaRow}>
-              <MapPin size={12} color={C.textTert} />
-              <Text style={styles.neighborhood}>{currentStop.neighborhood}</Text>
-              <Text style={styles.metaSep}>·</Text>
-              <Text style={styles.price}>{currentStop.priceTier}</Text>
-            </View>
-
             <Text style={styles.description} numberOfLines={3}>
               {currentStop.description}
             </Text>
@@ -359,8 +350,15 @@ const transportOptions: TransportOpt[] = connector ? [
               <Text style={styles.hoursText}>Hours vary — check ahead</Text>
             </View>
 
+            <View style={styles.metaRow}>
+              <MapPin size={12} color={C.textTert} />
+              <Text style={styles.neighborhood}>{currentStop.neighborhood}</Text>
+              <Text style={styles.metaSep}>·</Text>
+              <Text style={styles.price}>{currentStop.priceTier}</Text>
+            </View>
+
             <Pressable style={[styles.directionsBtn, { alignSelf: 'flex-start' }]} onPress={() => {}}>
-              <Navigation size={12} color={C.amber} />
+              <Navigation size={12} color="#FFFFFF" />
               <Text style={styles.directionsBtnText}>Directions</Text>
             </Pressable>
 
@@ -384,7 +382,7 @@ const transportOptions: TransportOpt[] = connector ? [
                 </View>
               </View>
               <Pressable style={styles.directionsBtn} onPress={() => {}}>
-                <Navigation size={12} color={C.amber} />
+                <Navigation size={12} color="#FFFFFF" />
                 <Text style={styles.directionsBtnText}>Directions</Text>
               </Pressable>
             </View>
@@ -486,7 +484,7 @@ const styles = StyleSheet.create({
   progNodeUpcoming: {
     backgroundColor: C.bg,
     borderWidth: 2,
-    borderColor: C.textTert,
+    borderColor: C.textSec,
   },
   progNodeText: {
     fontFamily: F.semi,
@@ -504,17 +502,6 @@ const styles = StyleSheet.create({
   progLineDone: {
     backgroundColor: C.amber,
   },
-  progLineUpcomingBase: {
-    overflow: 'hidden',
-    flexDirection: 'row',
-  },
-  progDash: {
-    width: 3,
-    height: 1.5,
-    backgroundColor: C.textTert,
-    marginRight: 6,
-    flexShrink: 0,
-  },
 
   // ── Stop block ──
   stopBlock: {
@@ -523,7 +510,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: C.border,
     overflow: 'hidden',
-    marginBottom: 6,
+    marginBottom: 0,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -622,14 +609,12 @@ const styles = StyleSheet.create({
   // ── Transport Connector ──
   transConnector: {
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 0,
   },
-  transConnectorLine: {
+  transConnLineTop: {
     width: 1.5,
     height: 12,
-    borderLeftWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: C.textTert,
+    backgroundColor: C.amber,
   },
   transConnectorChips: {
     alignItems: 'center',
@@ -721,9 +706,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: C.bg,
-    borderWidth: 1,
-    borderColor: C.border,
+    backgroundColor: C.amber,
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -732,7 +715,7 @@ const styles = StyleSheet.create({
   directionsBtnText: {
     fontFamily: F.semi,
     fontSize: 10,
-    color: C.amber,
+    color: '#FFFFFF',
   },
 
   // ── Previous stop ──

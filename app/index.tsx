@@ -27,19 +27,15 @@ import {
   Bookmark,
   ChevronRight,
   Clock,
-  Coffee,
   Heart,
   Home,
-  Leaf,
   MapPin,
-  Moon,
   Navigation,
-  Palette,
   Sparkles,
   User,
   Users,
-  Utensils,
 } from 'lucide-react-native';
+import { getCatIcon } from './_category-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -183,14 +179,6 @@ function CategoryCircle({ color, size = 40 }: { color: string; size?: number }) 
   );
 }
 
-function getCatIcon(catLabel: string): React.ComponentType<{ size: number; color: string }> {
-  if (catLabel.includes('EAT') || catLabel.includes('DRINK')) return Utensils;
-  if (catLabel.includes('COFFEE'))                            return Coffee;
-  if (catLabel.includes('ARTS') || catLabel.includes('CULTURE')) return Palette;
-  if (catLabel.includes('OUTDOORS'))                          return Leaf;
-  if (catLabel.includes('NIGHTLIFE'))                         return Moon;
-  return MapPin;
-}
 
 /** For You card — 160 × 232 */
 function ForYouCard({ item }: { item: ForYouPlace }) {
@@ -279,6 +267,7 @@ function ScoutCard({ onPress, plan }: PressHandlerProps & { plan: OutingPlan }) 
 
       {/* Stop list */}
       <View style={styles.stopList}>
+        <View style={styles.stopDivider} />
         {mappedStops.map((stop) => {
           const StopIcon = stop.Icon;
           return (
@@ -287,9 +276,12 @@ function ScoutCard({ onPress, plan }: PressHandlerProps & { plan: OutingPlan }) 
                 <View style={[styles.stopColorBar, { backgroundColor: stop.color }]} />
                 <StopIcon size={13} color={stop.color} />
                 <View style={styles.stopTextBlock}>
-                  <Text style={styles.stopCategoryLabel}>{stop.category}</Text>
+                  <Text style={[styles.stopCategoryLabel, { color: stop.color }]}>{stop.category}</Text>
                   <Text style={styles.stopPlaceName}>{stop.place}</Text>
-                  <Text style={styles.stopNeighborhood}>{stop.neighborhood}</Text>
+                </View>
+                <View style={styles.stopNeighborhoodRight}>
+                  <MapPin size={9} color={C.textSec} />
+                  <Text style={styles.stopNeighborhoodText}>{stop.neighborhood}</Text>
                 </View>
               </View>
               <View style={styles.stopDivider} />
@@ -520,7 +512,7 @@ function ActiveOutingCard({ onNextStop, onSeeDetails }: ActiveOutingCardProps) {
           </View>
         </View>
         <Pressable style={styles.directionsBtn} onPress={() => {}}>
-          <Navigation size={12} color={C.amber} />
+          <Navigation size={12} color="#FFFFFF" />
           <Text style={styles.directionsBtnText}>Directions</Text>
         </Pressable>
       </View>
@@ -796,7 +788,7 @@ const styles = StyleSheet.create({
   scoutLabelRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   scoutLabelText: {
     fontFamily: F.semi,
@@ -809,7 +801,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: C.textPrimary,
     lineHeight: 27,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   vibeTags: {
     flexDirection: 'row',
@@ -859,10 +851,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: C.textPrimary,
   },
-  stopNeighborhood: {
+  stopNeighborhoodRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    flexShrink: 0,
+  },
+  stopNeighborhoodText: {
     fontFamily: F.reg,
     fontSize: 10,
-    color: C.textTert,
+    color: C.textSec,
+    textAlign: 'right',
   },
   stopDivider: {
     height: 1,
@@ -1347,9 +1346,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: C.card,
-    borderWidth: 1,
-    borderColor: C.border,
+    backgroundColor: C.amber,
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -1357,7 +1354,7 @@ const styles = StyleSheet.create({
   directionsBtnText: {
     fontFamily: F.semi,
     fontSize: 10,
-    color: C.amber,
+    color: '#FFFFFF',
   },
 
   // Prev stop

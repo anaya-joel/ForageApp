@@ -16,17 +16,13 @@ import {
   Car,
   ChevronLeft,
   ChevronRight,
-  Coffee,
   Footprints,
   GripVertical,
   Heart,
-  Leaf,
   MapPin,
-  Moon,
-  Palette,
   Pencil,
-  Utensils,
 } from 'lucide-react-native';
+import { getCatIcon } from './_category-icons';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Modal,
@@ -124,14 +120,6 @@ export const CURATED_PLACES: CuratedPlace[] = [
 //  HELPERS
 // ─────────────────────────────────────────
 
-export function getCatIcon(category: string): React.ComponentType<{ size: number; color: string }> {
-  if (category.includes('EAT') || category.includes('DRINK')) return Utensils;
-  if (category.includes('COFFEE'))                             return Coffee;
-  if (category.includes('ARTS') || category.includes('CULTURE')) return Palette;
-  if (category.includes('OUTDOORS'))                           return Leaf;
-  if (category.includes('NIGHTLIFE'))                          return Moon;
-  return MapPin;
-}
 
 function getTransportIcon(mode: TransportMode): React.ComponentType<{ size: number; color: string }> {
   if (mode === 'drive')   return Car;
@@ -1042,7 +1030,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   pill: {
-    backgroundColor: C.border,
+    backgroundColor: '#E7E3E0',
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,

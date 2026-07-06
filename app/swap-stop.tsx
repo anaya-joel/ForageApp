@@ -33,7 +33,8 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CURATED_PLACES, getCatIcon } from './outing-preview';
+import { CURATED_PLACES } from './outing-preview';
+import { getCatIcon } from './_category-icons';
 import { setPendingSwap } from './_swap-store';
 
 // ─────────────────────────────────────────
