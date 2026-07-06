@@ -42,7 +42,12 @@ import {
 } from 'lucide-react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { getCurrentOutingName } from './_outing-store';
+import {
+  getCurrentPlan,
+  getDrafts,
+  getMostRecentDraft,
+  type OutingPlan,
+} from './_outing-store';
 import {
   Animated,
   FlatList,
@@ -98,28 +103,6 @@ const F = {
 // ─────────────────────────────────────────
 //  SAMPLE DATA  (replace with API / state)
 // ─────────────────────────────────────────
-
-const SCOUT_SUGGESTION = {
-  name: 'DC Art & Coffee Loop',
-  vibeTags: ['Artsy', 'Walkable', 'Cultural'],
-  stopCount: 4,
-  stops: [
-    { category: 'Coffee & Cafés',  place: 'Compass Coffee',    neighborhood: 'Shaw',       color: C.coffee  },
-    { category: 'Arts & Culture',  place: 'Hirshhorn Museum',  neighborhood: 'The Mall',   color: C.arts    },
-    { category: 'Outdoors',        place: 'National Mall',     neighborhood: 'Downtown',   color: C.outdoors},
-    { category: 'Eat & Drink',     place: 'The Dabney',        neighborhood: 'Shaw',       color: C.eat     },
-  ],
-};
-
-const CURRENT_DRAFT = {
-  name: 'City Coffee Crawl',
-  dateLabel: 'Sat, May 17',
-  stopCount: 3,
-  stopColors: [C.coffee, C.eat, C.arts],
-  extraStops: 2,
-};
-
-const OTHER_DRAFT_COUNT = 2;
 
 const ACTIVE_OUTING = {
   name: 'Spring Art & Park Walk',
@@ -261,9 +244,16 @@ function ForYouCard({ item }: { item: ForYouPlace }) {
 //  SCOUT CARD  (State A primary card)
 // ─────────────────────────────────────────
 
-function ScoutCard({ onPress, overrideName }: PressHandlerProps & { overrideName?: string }) {
-  const { vibeTags, stopCount, stops } = SCOUT_SUGGESTION;
-  const name = overrideName ?? SCOUT_SUGGESTION.name;
+function ScoutCard({ onPress, plan }: PressHandlerProps & { plan: OutingPlan }) {
+  const { name, vibeTags, stops } = plan;
+  const stopCount = stops.length;
+  const mappedStops = stops.map(s => ({
+    category: s.category,
+    place: s.name,
+    neighborhood: s.neighborhood,
+    color: s.color,
+    Icon: getCatIcon(s.category),
+  }));
   return (
     <Pressable style={styles.scoutCard} onPress={onPress}>
       {/* Stop count pill */}
@@ -289,21 +279,23 @@ function ScoutCard({ onPress, overrideName }: PressHandlerProps & { overrideName
 
       {/* Stop list */}
       <View style={styles.stopList}>
-        {/* Dashed connector line behind circles */}
-        <View style={styles.stopConnector} />
-        {stops.map((stop) => (
-          <View key={stop.place}>
-            <View style={styles.stopRow}>
-              <View style={[styles.stopCircle, { backgroundColor: stop.color }]} />
-              <View style={styles.stopTextBlock}>
-                <Text style={styles.stopCategoryLabel}>{stop.category}</Text>
-                <Text style={styles.stopPlaceName}>{stop.place}</Text>
+        {mappedStops.map((stop) => {
+          const StopIcon = stop.Icon;
+          return (
+            <View key={stop.place}>
+              <View style={styles.stopRow}>
+                <View style={[styles.stopColorBar, { backgroundColor: stop.color }]} />
+                <StopIcon size={13} color={stop.color} />
+                <View style={styles.stopTextBlock}>
+                  <Text style={styles.stopCategoryLabel}>{stop.category}</Text>
+                  <Text style={styles.stopPlaceName}>{stop.place}</Text>
+                  <Text style={styles.stopNeighborhood}>{stop.neighborhood}</Text>
+                </View>
               </View>
-              <Text style={styles.stopNeighborhood}>{stop.neighborhood}</Text>
+              <View style={styles.stopDivider} />
             </View>
-            <View style={styles.stopDivider} />
-          </View>
-        ))}
+          );
+        })}
       </View>
 
       {/* CTA affordance */}
@@ -368,8 +360,14 @@ function BuildAroundCard() {
 //  OUTING DRAFT CARD  (State B)
 // ─────────────────────────────────────────
 
-function OutingDraftCard({ onPress }: PressHandlerProps) {
-  const { name, dateLabel, stopCount, stopColors, extraStops } = CURRENT_DRAFT;
+function OutingDraftCard({ onPress, draft }: PressHandlerProps & { draft: OutingPlan }) {
+  const name       = draft.name;
+  const stopCount  = draft.stops.length;
+  const stopColors = draft.stops.map(s => s.color).slice(0, 3);
+  const extraStops = Math.max(0, draft.stops.length - 3);
+  const dateLabel  = draft.lastEdited
+    ? new Date(draft.lastEdited).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    : '';
   return (
     <>
       <Pressable style={[styles.card, styles.draftCard]} onPress={onPress}>
@@ -395,14 +393,16 @@ function OutingDraftCard({ onPress }: PressHandlerProps) {
               ]}
             />
           ))}
-          <View style={[styles.draftStopCircle, styles.draftStopExtra, { marginLeft: -8 }]}>
-            <Text style={styles.draftExtraText}>+{extraStops}</Text>
-          </View>
+          {extraStops > 0 && (
+            <View style={[styles.draftStopCircle, styles.draftStopExtra, { marginLeft: -8 }]}>
+              <Text style={styles.draftExtraText}>+{extraStops}</Text>
+            </View>
+          )}
         </View>
       </Pressable>
 
       {/* View draft list — outside card, below it */}
-      {OTHER_DRAFT_COUNT >= 1 && (
+      {(getDrafts().length - 1) >= 1 && (
         <Pressable style={styles.draftListLink} onPress={() => {}}>
           <Text style={styles.draftListText}>View draft list</Text>
           <ChevronRight size={12} color={C.textSec} />
@@ -611,13 +611,14 @@ function getGreeting(name: string) {
 export default function HomeScreen() {
   // 'A' = no outing · 'B' = draft in progress · 'C' = active outing
   const [homeState, setHomeState] = useState('A');
-  const [currentOutingName, setCurrentOutingName] = useState(getCurrentOutingName());
+  const [, setRefreshTick] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
-      setCurrentOutingName(getCurrentOutingName());
+      setRefreshTick(t => t + 1);
     }, [])
   );
+
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -636,6 +637,9 @@ export default function HomeScreen() {
 
   if (!fontsLoaded && !fontError) return null;
 
+  const drafts      = getDrafts();
+  const derivedState = drafts.length > 0 ? 'B' : 'A';
+
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
@@ -652,26 +656,31 @@ export default function HomeScreen() {
         {/* Greeting */}
         <Text style={styles.greeting}>{getGreeting('Joel')}</Text>
 
-        {/* ── STATE A: Scout suggestion ── */}
-        {homeState === 'A' && (
-          <ScoutCard onPress={() => router.push('/outing-preview')} overrideName={currentOutingName} />
-        )}
-
-        {/* ── STATE B: Draft + Scout also suggests ── */}
-        {homeState === 'B' && (
-          <>
-            <OutingDraftCard onPress={() => router.push('/outing-preview')} />
-            {/* Full Scout card below the label */}
-            <ScoutCard onPress={() => router.push('/outing-preview')} overrideName={currentOutingName} />
-          </>
-        )}
-
-        {/* ── STATE C: Active outing hero ── */}
+        {/* ── STATE C: Active outing hero (dev-switcher only) ── */}
         {homeState === 'C' && (
           <ActiveOutingCard
             onNextStop={() => {/* navigate to Active Outing Detail */}}
             onSeeDetails={() => {/* navigate to Active Outing Detail */}}
           />
+        )}
+
+        {/* ── STATE A: Scout suggestion ── */}
+        {homeState !== 'C' && derivedState === 'A' && (
+          <ScoutCard onPress={() => router.push('/outing-preview')} plan={getCurrentPlan()} />
+        )}
+
+        {/* ── STATE B: Draft + Scout also suggests ── */}
+        {homeState !== 'C' && derivedState === 'B' && (
+          <>
+            {getMostRecentDraft() != null && (
+              <OutingDraftCard
+                onPress={() => router.push({ pathname: '/outing-preview', params: { draftId: getMostRecentDraft()!.id } })}
+                draft={getMostRecentDraft()!}
+              />
+            )}
+            {/* Full Scout card below the label */}
+            <ScoutCard onPress={() => router.push('/outing-preview')} plan={getCurrentPlan()} />
+          </>
         )}
 
         {/* For You — always shown */}
@@ -824,29 +833,17 @@ const styles = StyleSheet.create({
   // Stop list
   stopList: {
     marginTop: 16,
-    position: 'relative',
-  },
-  stopConnector: {
-    position: 'absolute',
-    left: 19,     // center of 40px circle
-    top: 20,
-    bottom: 20,
-    width: 2,
-    borderStyle: 'dashed',
-    borderLeftWidth: 2,
-    borderColor: '#D0C8C0',
   },
   stopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 52,
-    gap: 12,
+    paddingVertical: 10,
+    gap: 8,
   },
-  stopCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    flexShrink: 0,
+  stopColorBar: {
+    width: 3,
+    borderRadius: 1.5,
+    alignSelf: 'stretch',
   },
   stopTextBlock: {
     flex: 1,
@@ -866,13 +863,11 @@ const styles = StyleSheet.create({
     fontFamily: F.reg,
     fontSize: 10,
     color: C.textTert,
-    textAlign: 'right',
-    flexShrink: 0,
   },
   stopDivider: {
     height: 1,
-    backgroundColor: C.divider,
-    marginLeft: 52,   // indent past circle
+    backgroundColor: C.border,
+    marginLeft: 11,
   },
   scoutCTA: {
     flexDirection: 'row',

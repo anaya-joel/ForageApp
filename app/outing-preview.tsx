@@ -12,18 +12,6 @@ import {
 import { useFonts } from 'expo-font';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import {
-  getCurrentPlan,
-  getDraftById,
-  setCurrentPlan,
-  saveDraftFromCurrent,
-  beginOuting,
-  INITIAL_PLAN,
-  ALTERNATE_PLAN,
-  type OutingPlan,
-  type Stop,
-  type TransportMode,
-} from './_outing-store';
-import {
   Bus,
   Car,
   ChevronLeft,
@@ -52,6 +40,18 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  ALTERNATE_PLAN,
+  beginOuting,
+  getCurrentPlan,
+  getDraftById,
+  INITIAL_PLAN,
+  saveDraftFromCurrent,
+  setCurrentPlan,
+  type OutingPlan,
+  type Stop,
+  type TransportMode,
+} from './_outing-store';
 import { consumePendingSwap } from './_swap-store';
 
 // ─────────────────────────────────────────
@@ -644,6 +644,8 @@ export default function OutingPreviewScreen() {
         setShowDirtySheet(true);
       } else {
         setEditMode(false); // clean exit — return to Full Details
+        setIsEditingName(false);
+        setIsEditingCaption(false);
       }
     } else {
       router.back();
@@ -672,6 +674,8 @@ export default function OutingPreviewScreen() {
     setCurrentPlan(originalPlanRef.current);
     setIsDirty(false);
     setEditMode(false);
+    setIsEditingName(false);
+    setIsEditingCaption(false);
     setShowDirtySheet(false);
   }
 
@@ -686,6 +690,8 @@ export default function OutingPreviewScreen() {
       setIsDirty(false);
       setIsRegenerating(false);
       setEditMode(false);
+      setIsEditingName(false);
+      setIsEditingCaption(false);
     }, 1800);
   }
 
@@ -809,12 +815,6 @@ export default function OutingPreviewScreen() {
               </View>
             )}
 
-            <View style={styles.pillsRow}>
-              <View style={styles.pill}><Text style={styles.pillText}>{plan.stops.length} stops</Text></View>
-              <View style={styles.pill}><Text style={styles.pillText}>~{hrs} hrs</Text></View>
-              <View style={styles.pill}><Text style={styles.pillText}>{tiers}</Text></View>
-            </View>
-
             {editMode && isEditingCaption ? (
               <TextInput
                 style={styles.captionInput}
@@ -847,6 +847,12 @@ export default function OutingPreviewScreen() {
                 )}
               </View>
             )}
+
+            <View style={styles.pillsRow}>
+              <View style={styles.pill}><Text style={styles.pillText}>{plan.stops.length} stops</Text></View>
+              <View style={styles.pill}><Text style={styles.pillText}>~{hrs} hrs</Text></View>
+              <View style={styles.pill}><Text style={styles.pillText}>{tiers}</Text></View>
+            </View>
           </View>
         </View>
       </View>
@@ -1053,7 +1059,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: C.textSec,
     lineHeight: 20,
-    marginTop: 8,
   },
 
   // ── Scroll ──

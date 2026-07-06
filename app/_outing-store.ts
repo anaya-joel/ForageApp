@@ -20,6 +20,7 @@ export type OutingVariant = 'initial' | 'alternate';
 export type OutingPlan = {
   id: string;
   name: string;
+  caption: string;
   vibeTags: string[];
   stops: Stop[];
   variant: OutingVariant;
@@ -37,6 +38,7 @@ export type OutingPlan = {
 export const INITIAL_PLAN: OutingPlan = {
   id: 'plan-initial',
   name: 'DC Art & Coffee Loop',
+  caption: 'Coffee, culture, and something to show for it.',
   vibeTags: ['Artsy', 'Walkable', 'Cultural'],
   variant: 'initial',
   isDraft: false,
@@ -94,6 +96,7 @@ export const INITIAL_PLAN: OutingPlan = {
 export const ALTERNATE_PLAN: OutingPlan = {
   id: 'plan-alternate',
   name: 'Capitol Hill Culture Day',
+  caption: 'History, market stalls, and a proper dinner.',
   vibeTags: ['Historic', 'Curated', 'Local'],
   variant: 'alternate',
   isDraft: false,
@@ -230,18 +233,6 @@ export function hasAllVariantsExhausted(): boolean {
 
 export function deleteDraft(id: string): void {
   _drafts = _drafts.filter((d) => d.id !== id);
-}
-
-// ─────────────────────────────────────────
-//  BACKWARD COMPAT
-// ─────────────────────────────────────────
-
-export function getCurrentOutingName(): string {
-  return _currentPlan.name;
-}
-
-export function setCurrentOutingName(name: string): void {
-  _currentPlan = { ..._currentPlan, name };
 }
 
 // ─────────────────────────────────────────
