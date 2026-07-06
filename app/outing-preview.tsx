@@ -67,6 +67,7 @@ const C = {
   textTert:    '#9A8E88',
   border:      '#EDE8E2',
   divider:     '#F5F0EA',
+  pillMuted:   '#E7E3E0',
   eat:         '#B84E38',
   coffee:      '#6B4530',
   outdoors:    '#3A6445',
@@ -1030,7 +1031,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   pill: {
-    backgroundColor: '#E7E3E0',
+    backgroundColor: C.pillMuted,
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
