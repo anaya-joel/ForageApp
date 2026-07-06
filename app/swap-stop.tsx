@@ -33,7 +33,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CURATED_PLACES } from './outing-preview';
+import { VENUES, type Venue } from '../data/venues';
 import { getCatIcon } from './_category-icons';
 import { setPendingSwap } from './_swap-store';
 
@@ -70,7 +70,7 @@ function CandidateRow({
   travelHint,
   onChoose,
 }: {
-  place: (typeof CURATED_PLACES)[number];
+  place: Venue;
   travelHint: string;
   onChoose: () => void;
 }) {
@@ -155,11 +155,11 @@ export default function SwapStopScreen() {
 
   if (!fontsLoaded && !fontError) return null;
 
-  const candidates = CURATED_PLACES.filter(
+  const candidates = VENUES.filter(
     (p) => p.category === category
   );
 
-  function handleChoose(place: (typeof CURATED_PLACES)[number]) {
+  function handleChoose(place: Venue) {
     setPendingSwap({
       stopId,
       place: {

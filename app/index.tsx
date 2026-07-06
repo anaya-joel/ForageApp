@@ -36,6 +36,8 @@ import {
   Users,
 } from 'lucide-react-native';
 import { getCatIcon } from './_category-icons';
+import { C } from '../data/colors';
+import { VENUES, type Venue } from '../data/venues';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -61,33 +63,6 @@ SplashScreen.preventAutoHideAsync();
 // ─────────────────────────────────────────
 //  DESIGN TOKENS
 // ─────────────────────────────────────────
-
-const C = {
-  bg:          '#F3EDE4',
-  card:        '#FFFFFF',
-  amber:       '#B86820',
-  amberNav:    '#C8841F',
-  amberTint:   '#FEF4E8',
-  amberBorder: '#DDB878',
-  fabTop:      '#D4891F',
-  fabBottom:   '#7A3F08',
-  textPrimary: '#2A2420',
-  textSec:     '#6B6460',
-  textTert:    '#9A8E88',
-  border:      '#EDE8E2',
-  divider:     '#F5F0EA',
-  progressBg:  '#F8F5F0',
-  nextUpBg:    '#F3EDE4',
-  mapGreen:    '#4A7A5A',
-  // Category colours
-  eat:         '#B84E38',
-  coffee:      '#6B4530',
-  outdoors:    '#3A6445',
-  arts:        '#5C4080',
-  experiences: '#2A7080',
-  nightlife:   '#2A1F4E',
-  markets:     '#A0622A',
-};
 
 const F = {
   serif:  'LibreBaskerville_700Bold',
@@ -119,23 +94,7 @@ const ACTIVE_OUTING = {
   },
 };
 
-const FOR_YOU_PLACES = [
-  { id: '1', name: 'The Dabney',        neighborhood: 'Shaw',             price: '$$$',  color: C.eat,        catLabel: 'EAT & DRINK'     },
-  { id: '2', name: 'Slipstream Coffee', neighborhood: 'Columbia Heights', price: '$$',   color: C.coffee,     catLabel: 'COFFEE & CAFÉS'  },
-  { id: '3', name: 'Hirshhorn Museum',  neighborhood: 'The Mall',         price: 'Free', color: C.arts,       catLabel: 'ARTS & CULTURE'  },
-  { id: '4', name: 'Rock Creek Park',   neighborhood: 'Northwest DC',     price: 'Free', color: C.outdoors,   catLabel: 'OUTDOORS'        },
-  { id: '5', name: 'Flash Nightclub',   neighborhood: 'Penn Quarter',     price: '$$',   color: C.nightlife,  catLabel: 'NIGHTLIFE'       },
-];
-
 const SAVED_PLACE_COUNT = 4; // >= 3 shows Build Around card
-type ForYouPlace = {
-  id: string;
-  name: string;
-  neighborhood: string;
-  price: string;
-  color: string;
-  catLabel: string;
-};
 
 type PressHandlerProps = {
   onPress?: () => void;
@@ -181,9 +140,9 @@ function CategoryCircle({ color, size = 40 }: { color: string; size?: number }) 
 
 
 /** For You card — 160 × 232 */
-function ForYouCard({ item }: { item: ForYouPlace }) {
+function ForYouCard({ item }: { item: Venue }) {
   const [saved, setSaved] = useState(false);
-  const CatIcon = getCatIcon(item.catLabel);
+  const CatIcon = getCatIcon(item.category);
   return (
     <Pressable style={styles.fyCard} onPress={() => {}}>
       {/* Photo area */}
@@ -194,7 +153,7 @@ function ForYouCard({ item }: { item: ForYouPlace }) {
         </View>
         {/* Category pill */}
         <View style={[styles.fyCatPill, { backgroundColor: item.color }]}>
-          <Text style={styles.fyCatText} numberOfLines={1}>{item.catLabel}</Text>
+          <Text style={styles.fyCatText} numberOfLines={1}>{item.category}</Text>
         </View>
         {/* Heart */}
         <Pressable
@@ -221,7 +180,7 @@ function ForYouCard({ item }: { item: ForYouPlace }) {
             <MapPin size={10} color={C.textSec} />
             <Text style={styles.fyNeighborhood} numberOfLines={1}>{item.neighborhood}</Text>
           </View>
-          <Text style={styles.fyPrice}>{item.price}</Text>
+          <Text style={styles.fyPrice}>{item.priceTier}</Text>
         </View>
       </View>
     </Pressable>
@@ -311,7 +270,7 @@ function ForYouSection() {
         <Text style={styles.seeAll}>See all ›</Text>
       </View>
       <FlatList
-        data={FOR_YOU_PLACES}
+        data={VENUES}
         keyExtractor={item => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -561,7 +520,6 @@ function BottomNav({ activeTab = 'Home' }) {
               <Pressable style={styles.fab}>
                 <Sparkles size={24} color="#FFFFFF" />
               </Pressable>
-              <Text style={styles.navLabel}>Outing</Text>
             </View>
           );
         }
@@ -898,7 +856,7 @@ const styles = StyleSheet.create({
   seeAll: {
     fontFamily: F.reg,
     fontSize: 13,
-    color: C.textSec,
+    color: '#524B45',
   },
   fyRow: {
     paddingRight: 14,
@@ -978,7 +936,7 @@ const styles = StyleSheet.create({
   },
   fyDivider: {
     height: 1,
-    backgroundColor: C.divider,
+    backgroundColor: '#E3DACD',
     marginBottom: 6,
   },
   fyMeta: {
@@ -1021,7 +979,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   buildIconWrap: {
     width: 36,
@@ -1044,7 +1002,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: C.textSec,
     lineHeight: 16,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   buildCTA: {
     fontFamily: F.semi,

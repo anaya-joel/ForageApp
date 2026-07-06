@@ -23,6 +23,8 @@ import {
   Pencil,
 } from 'lucide-react-native';
 import { getCatIcon } from './_category-icons';
+import { C } from '../data/colors';
+import { VENUES, type Venue } from '../data/venues';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Modal,
@@ -54,29 +56,6 @@ import { consumePendingSwap } from './_swap-store';
 //  DESIGN TOKENS
 // ─────────────────────────────────────────
 
-const C = {
-  bg:          '#F3EDE4',
-  card:        '#FFFFFF',
-  amber:       '#B86820',
-  amberTint:   '#FEF4E8',
-  amberBorder: '#DDB878',
-  fabTop:      '#D4891F',
-  fabBottom:   '#7A3F08',
-  textPrimary: '#2A2420',
-  textSec:     '#6B6460',
-  textTert:    '#9A8E88',
-  border:      '#EDE8E2',
-  divider:     '#F5F0EA',
-  pillMuted:   '#E7E3E0',
-  eat:         '#B84E38',
-  coffee:      '#6B4530',
-  outdoors:    '#3A6445',
-  arts:        '#5C4080',
-  nightlife:   '#2A1F4E',
-  markets:     '#A0622A',
-  experiences: '#2A7080',
-};
-
 const F = {
   serif: 'LibreBaskerville_700Bold',
   reg:   'PlusJakartaSans_400Regular',
@@ -87,34 +66,6 @@ const F = {
 // ─────────────────────────────────────────
 //  TYPES
 // ─────────────────────────────────────────
-
-
-type CuratedPlace = {
-  id: string;
-  name: string;
-  category: string;
-  color: string;
-  description: string;
-  neighborhood: string;
-  priceTier: string;
-};
-
-
-
-export const CURATED_PLACES: CuratedPlace[] = [
-  { id: 'c1',  name: 'Bluestone Lane',            category: 'COFFEE & CAFÉS', color: C.coffee,    neighborhood: 'Logan Circle',     priceTier: '$$',   description: 'Australian-style café with specialty espresso drinks and all-day avocado toast.' },
-  { id: 'c2',  name: 'Baked & Wired',             category: 'COFFEE & CAFÉS', color: C.coffee,    neighborhood: 'Georgetown',       priceTier: '$',    description: "Georgetown's beloved bakery-café famous for cupcakes and great pour-overs." },
-  { id: 'c3',  name: 'Slipstream Coffee',          category: 'COFFEE & CAFÉS', color: C.coffee,    neighborhood: 'Columbia Heights', priceTier: '$',    description: 'Columbia Heights café with excellent filter coffee and a relaxed neighborhood vibe.' },
-  { id: 'c4',  name: 'National Portrait Gallery',  category: 'ARTS & CULTURE', color: C.arts,      neighborhood: 'Penn Quarter',     priceTier: 'Free', description: 'Presidential portraits and bold contemporary commissions in a stunning neoclassical palace.' },
-  { id: 'c5',  name: 'Smithsonian American Art',   category: 'ARTS & CULTURE', color: C.arts,      neighborhood: 'Penn Quarter',     priceTier: 'Free', description: "The nation's oldest federal art collection, with folk art, photography, and modern works." },
-  { id: 'c6',  name: 'Meridian Hill Park',         category: 'OUTDOORS',       color: C.outdoors,  neighborhood: 'Columbia Heights', priceTier: 'Free', description: 'A cascading fountain park perched above Columbia Heights with skyline views.' },
-  { id: 'c7',  name: 'Rock Creek Park',            category: 'OUTDOORS',       color: C.outdoors,  neighborhood: 'Northwest DC',     priceTier: 'Free', description: '1,700 acres of urban forest with trails, a planetarium, and creek-side picnic spots.' },
-  { id: 'c8',  name: 'Gravelly Point Park',        category: 'OUTDOORS',       color: C.outdoors,  neighborhood: 'Arlington',        priceTier: 'Free', description: 'Watch planes land 200 feet overhead from a grassy riverside lawn along the Potomac.' },
-  { id: 'c9',  name: 'Cranes',                     category: 'EAT & DRINK',    color: C.eat,       neighborhood: 'Penn Quarter',     priceTier: '$$$',  description: 'Japanese-Spanish kaiseki cuisine in a serene Penn Quarter setting.' },
-  { id: 'c10', name: 'The Roost',                  category: 'EAT & DRINK',    color: C.eat,       neighborhood: 'Capitol Hill',     priceTier: '$$',   description: 'A rotating food hall with DC-born vendors across breakfast, lunch, and dinner.' },
-  { id: 'c11', name: 'Eastern Market',             category: 'MARKETS',        color: C.markets,   neighborhood: 'Capitol Hill',     priceTier: '$',    description: "Capitol Hill's historic public market with local produce, art, and food vendors." },
-  { id: 'c12', name: 'Flash Nightclub',            category: 'NIGHTLIFE',      color: C.nightlife, neighborhood: 'Penn Quarter',     priceTier: '$$',   description: "DC's premier underground electronic music venue with world-class DJs." },
-];
 
 
 // ─────────────────────────────────────────
@@ -244,7 +195,7 @@ function AddStopSheet({
 }: {
   visible: boolean;
   onClose: () => void;
-  onSelectForDetail: (place: CuratedPlace) => void;
+  onSelectForDetail: (place: Venue) => void;
   currentStops: Stop[];
 }) {
   const insets = useSafeAreaInsets();
@@ -252,9 +203,9 @@ function AddStopSheet({
   // Categories already present in the current outing
   const currentCategories = new Set(currentStops.map((s) => s.category));
 
-  // Group all curated places by category (preserving CURATED_PLACES order)
-  const groups = new Map<string, CuratedPlace[]>();
-  for (const place of CURATED_PLACES) {
+  // Group all curated places by category (preserving VENUES order)
+  const groups = new Map<string, Venue[]>();
+  for (const place of VENUES) {
     if (!groups.has(place.category)) groups.set(place.category, []);
     groups.get(place.category)!.push(place);
   }
@@ -590,7 +541,7 @@ export default function OutingPreviewScreen() {
   const [savedPlaceIds, setSavedPlaceIds]   = useState<Set<string>>(new Set());
   const [detailStop, setDetailStop]         = useState<Stop | null>(null);
   const [showDraftCapModal, setShowDraftCapModal] = useState(false);
-  const [addDetailPlace, setAddDetailPlace] = useState<CuratedPlace | null>(null);
+  const [addDetailPlace, setAddDetailPlace] = useState<Venue | null>(null);
 
   const originalPlanRef = useRef<OutingPlan>(
     draftId ? (getDraftById(draftId) ?? getCurrentPlan()) : getCurrentPlan()
@@ -707,7 +658,7 @@ export default function OutingPreviewScreen() {
     });
   }
 
-  function handleAddPlace(place: CuratedPlace) {
+  function handleAddPlace(place: Venue) {
     const newStop: Stop = {
       id:           place.id,
       name:         place.name,
@@ -733,7 +684,7 @@ export default function OutingPreviewScreen() {
     setIsDirty(true);
   }
 
-  function handleSelectForDetail(place: CuratedPlace) {
+  function handleSelectForDetail(place: Venue) {
     setAddDetailPlace(place);
     setShowAddSheet(false);
   }
