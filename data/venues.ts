@@ -43,6 +43,16 @@ export const VENUES: Venue[] = [
     description: 'Columbia Heights café with excellent filter coffee and a relaxed neighborhood vibe.',
     hours: 'Daily 7am–9pm',
   },
+  {
+    id: 'coffee4',
+    name: 'Compass Coffee',
+    category: 'COFFEE & CAFÉS',
+    color: C.coffee,
+    neighborhood: 'Shaw',
+    priceTier: '$',
+    description: 'A Shaw neighborhood staple known for its single-origin pour-overs and cozy brick interior with exposed beams.',
+    hours: 'Mon–Fri 6:30am–7pm, Sat–Sun 7am–7pm',
+  },
 
   // ── Arts & Culture ──
   {
@@ -106,6 +116,16 @@ export const VENUES: Venue[] = [
     priceTier: 'Free',
     description: 'Watch planes land 200 feet overhead from a grassy riverside lawn along the Potomac.',
     hours: 'Daily dawn to dusk',
+  },
+  {
+    id: 'outdoors4',
+    name: 'National Mall',
+    category: 'OUTDOORS',
+    color: C.outdoors,
+    neighborhood: 'Downtown',
+    priceTier: 'Free',
+    description: 'Stroll the iconic 2-mile greenway flanked by world-class museums and memorials. Best midday light here.',
+    hours: 'Daily 24 hours',
   },
 
   // ── Experiences ──

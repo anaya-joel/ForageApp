@@ -41,6 +41,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   beginOuting,
+  createStopInstanceId,
   getDraftById,
   getScoutSuggestion,
   getWorkingPlan,
@@ -234,9 +235,15 @@ function AddStopSheet({
   // Categories already present in the current outing
   const currentCategories = new Set(currentStops.map((s) => s.category));
 
+  // Venues already used elsewhere in the plan — excluded below so the same
+  // venue can't be added twice. Removing a stop frees its venue back up
+  // automatically since this is recomputed from currentStops on every render.
+  const usedVenueIds = new Set(currentStops.map((s) => s.id));
+
   // Group all curated places by category (preserving VENUES order)
   const groups = new Map<string, Venue[]>();
   for (const place of VENUES) {
+    if (usedVenueIds.has(place.id)) continue;
     if (!groups.has(place.category)) groups.set(place.category, []);
     groups.get(place.category)!.push(place);
   }
@@ -572,7 +579,7 @@ export default function OutingPreviewScreen() {
       if (!pending) return;
       setPlan((p) => {
         const newStops = p.stops.map((stop) =>
-          stop.id === pending.stopId
+          stop.stopInstanceId === pending.stopInstanceId
             ? {
                 ...stop,
                 id:           pending.place.id,
@@ -657,9 +664,9 @@ export default function OutingPreviewScreen() {
     setIsEditingCaption(false);
   }
 
-  function handleRemoveStop(id: string) {
+  function handleRemoveStop(stopInstanceId: string) {
     setPlan((p) => {
-      const updated = { ...p, stops: p.stops.filter((stop) => stop.id !== id) };
+      const updated = { ...p, stops: p.stops.filter((stop) => stop.stopInstanceId !== stopInstanceId) };
       setWorkingPlan(updated);
       return updated;
     });
@@ -669,12 +676,15 @@ export default function OutingPreviewScreen() {
   function handleOpenSwap(stop: Stop, index: number) {
     const prevConnector = index > 0 ? plan.stops[index - 1].connector : undefined;
     const travelHint = prevConnector?.time ?? stop.connector?.time ?? '10 min walk';
+    // Keep workingPlan in sync with what's on screen — the swap screen reads
+    // it directly to know which venues are already used elsewhere in the plan.
+    setWorkingPlan(plan);
     router.push({
       pathname: '/swap-stop',
       params: {
-        stopId:     stop.id,
-        stopName:   stop.name,
-        category:   stop.category,
+        stopInstanceId: stop.stopInstanceId,
+        stopName:       stop.name,
+        category:       stop.category,
         travelHint,
       },
     });
@@ -682,14 +692,15 @@ export default function OutingPreviewScreen() {
 
   function handleAddPlace(place: Venue) {
     const newStop: Stop = {
-      id:           place.id,
-      name:         place.name,
-      category:     place.category,
-      color:        place.color,
-      description:  place.description,
-      neighborhood: place.neighborhood,
-      priceTier:    place.priceTier,
-      connector:    { mode: 'walk', time: '10 min walk' },
+      id:             place.id,
+      stopInstanceId: createStopInstanceId(),
+      name:           place.name,
+      category:       place.category,
+      color:          place.color,
+      description:    place.description,
+      neighborhood:   place.neighborhood,
+      priceTier:      place.priceTier,
+      connector:      { mode: 'walk', time: '10 min walk' },
     };
     setPlan((p) => {
       const updated = [...p.stops];
@@ -834,12 +845,12 @@ export default function OutingPreviewScreen() {
         ) : (
           <>
             {plan.stops.map((stop, index) => (
-              <React.Fragment key={stop.id}>
+              <React.Fragment key={stop.stopInstanceId}>
                 <StopCard
                   stop={stop}
                   editMode={editMode}
                   onSwap={() => handleOpenSwap(stop, index)}
-                  onRemove={() => handleRemoveStop(stop.id)}
+                  onRemove={() => handleRemoveStop(stop.stopInstanceId)}
                   onPress={() => setDetailStop(stop)}
                 />
                 {index < plan.stops.length - 1 && stop.connector && (

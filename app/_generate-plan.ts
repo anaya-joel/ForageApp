@@ -1,5 +1,5 @@
 import { VENUES, type Venue } from '../data/venues';
-import type { OutingPlan, Stop } from './_outing-store';
+import { createStopInstanceId, type OutingPlan, type Stop } from './_outing-store';
 
 // ─────────────────────────────────────────
 //  TYPES
@@ -270,6 +270,7 @@ export function generatePlan(inputs: PlanInputs): OutingPlan {
   const stops: Stop[] = selected.map((venue, i) => {
     const stop: Stop = {
       id: venue.id,
+      stopInstanceId: createStopInstanceId(),
       name: venue.name,
       category: venue.category,
       color: venue.color,

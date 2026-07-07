@@ -5,7 +5,8 @@
 export type TransportMode = 'walk' | 'drive' | 'transit';
 
 export type Stop = {
-  id: string;
+  id: string; // venue catalog reference — NOT unique per stop; two stops can share a venue
+  stopInstanceId: string; // unique to this stop's occurrence within its plan
   name: string;
   category: string;
   color: string;
@@ -14,6 +15,12 @@ export type Stop = {
   priceTier: string;
   connector?: { mode: TransportMode; time: string };
 };
+
+// Call whenever a stop is added to a plan (generation, manual add, swap-in)
+// so two stops referencing the same venue remain distinguishable.
+export function createStopInstanceId(): string {
+  return `stop-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 export type OutingVariant = 'initial' | 'alternate' | 'generated';
 
@@ -48,7 +55,8 @@ export const INITIAL_PLAN: OutingPlan = {
   currentStopIndex: 0,
   stops: [
     {
-      id: '1',
+      id: 'coffee4',
+      stopInstanceId: 'seed-init-1',
       name: 'Compass Coffee',
       category: 'COFFEE & CAFÉS',
       color: '#6B4530',
@@ -59,7 +67,8 @@ export const INITIAL_PLAN: OutingPlan = {
       connector: { mode: 'walk', time: '8 min walk' },
     },
     {
-      id: '2',
+      id: 'arts1',
+      stopInstanceId: 'seed-init-2',
       name: 'Hirshhorn Museum',
       category: 'ARTS & CULTURE',
       color: '#5C4080',
@@ -70,7 +79,8 @@ export const INITIAL_PLAN: OutingPlan = {
       connector: { mode: 'walk', time: '14 min walk' },
     },
     {
-      id: '3',
+      id: 'outdoors4',
+      stopInstanceId: 'seed-init-3',
       name: 'National Mall',
       category: 'OUTDOORS',
       color: '#3A6445',
@@ -81,7 +91,8 @@ export const INITIAL_PLAN: OutingPlan = {
       connector: { mode: 'walk', time: '20 min walk' },
     },
     {
-      id: '4',
+      id: 'eat1',
+      stopInstanceId: 'seed-init-4',
       name: 'The Dabney',
       category: 'EAT & DRINK',
       color: '#B84E38',
@@ -106,7 +117,8 @@ export const ALTERNATE_PLAN: OutingPlan = {
   currentStopIndex: 0,
   stops: [
     {
-      id: 'a1',
+      id: 'c1',
+      stopInstanceId: 'seed-alt-a1',
       name: 'Bluestone Lane',
       category: 'COFFEE & CAFÉS',
       color: '#6B4530',
@@ -117,7 +129,8 @@ export const ALTERNATE_PLAN: OutingPlan = {
       connector: { mode: 'walk', time: '6 min walk' },
     },
     {
-      id: 'a2',
+      id: 'c4',
+      stopInstanceId: 'seed-alt-a2',
       name: 'National Portrait Gallery',
       category: 'ARTS & CULTURE',
       color: '#5C4080',
@@ -128,7 +141,8 @@ export const ALTERNATE_PLAN: OutingPlan = {
       connector: { mode: 'transit', time: '18 min ride' },
     },
     {
-      id: 'a3',
+      id: 'c11',
+      stopInstanceId: 'seed-alt-a3',
       name: 'Eastern Market',
       category: 'MARKETS',
       color: '#A0622A',
@@ -139,7 +153,8 @@ export const ALTERNATE_PLAN: OutingPlan = {
       connector: { mode: 'walk', time: '10 min walk' },
     },
     {
-      id: 'a4',
+      id: 'c9',
+      stopInstanceId: 'seed-alt-a4',
       name: 'Cranes',
       category: 'EAT & DRINK',
       color: '#B84E38',

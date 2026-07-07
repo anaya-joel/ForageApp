@@ -4,7 +4,7 @@
  */
 
 export type SwapPayload = {
-  stopId: string;
+  stopInstanceId: string;
   place: {
     id: string;
     name: string;

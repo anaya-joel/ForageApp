@@ -8,10 +8,14 @@
  * navigates back — OutingPreviewScreen picks it up via useFocusEffect.
  *
  * Params (via useLocalSearchParams):
- *   stopId     — ID of the stop being replaced
- *   stopName   — name of the stop, used in header
- *   category   — category string, used to filter candidates
- *   travelHint — travel time string from the adjacent stop, shown per row
+ *   stopInstanceId — instance ID of the stop being replaced
+ *   stopName       — name of the stop, used in header
+ *   category       — category string, used to filter candidates
+ *   travelHint     — travel time string from the adjacent stop, shown per row
+ *
+ * Candidates exclude any venue already used elsewhere in workingPlan
+ * (including the venue at the stop currently being swapped), so choosing a
+ * candidate can never create a duplicate venue within the plan.
  */
 
 import { LibreBaskerville_700Bold } from '@expo-google-fonts/libre-baskerville';
@@ -35,6 +39,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { VENUES, type Venue } from '../data/venues';
 import { getCatIcon } from './_category-icons';
+import { getWorkingPlan } from './_outing-store';
 import { setPendingSwap } from './_swap-store';
 
 // ─────────────────────────────────────────
@@ -146,8 +151,8 @@ export default function SwapStopScreen() {
     PlusJakartaSans_600SemiBold,
   });
 
-  const { stopId, stopName, category, travelHint } = useLocalSearchParams<{
-    stopId: string;
+  const { stopInstanceId, stopName, category, travelHint } = useLocalSearchParams<{
+    stopInstanceId: string;
     stopName: string;
     category: string;
     travelHint: string;
@@ -155,13 +160,18 @@ export default function SwapStopScreen() {
 
   if (!fontsLoaded && !fontError) return null;
 
+  // Venues already used elsewhere in the plan (including the stop being
+  // swapped itself) are excluded so a swap can't create a duplicate.
+  const workingPlan = getWorkingPlan();
+  const usedVenueIds = new Set(workingPlan?.stops.map((s) => s.id) ?? []);
+
   const candidates = VENUES.filter(
-    (p) => p.category === category
+    (p) => p.category === category && !usedVenueIds.has(p.id)
   );
 
   function handleChoose(place: Venue) {
     setPendingSwap({
-      stopId,
+      stopInstanceId,
       place: {
         id:           place.id,
         name:         place.name,
