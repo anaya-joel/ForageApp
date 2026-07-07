@@ -240,3 +240,9 @@ that both outnumber a third). Chosen because the spec's tie-break wording
 ("use the first stop's category") is only unambiguous for the all-distinct
 case; this is the natural generalization. Revisit only if product wants a
 different tie-break (e.g. category order in the master spec's fixed list).
+
+## [7/7] — app/_dev-rating-test.tsx is a temporary scaffold
+
+app/_dev-rating-test.tsx is a temporary scaffold for testing rating
+components in isolation before Active Outing detail screen exists; delete
+once real wiring is in place.
