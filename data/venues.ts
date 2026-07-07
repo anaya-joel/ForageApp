@@ -66,7 +66,7 @@ export const VENUES: Venue[] = [
     hours: 'Daily 11:30am–7pm',
   },
   {
-    id: 'v3',
+    id: 'arts1',
     name: 'Hirshhorn Museum',
     category: 'ARTS & CULTURE',
     color: C.arts,
@@ -108,9 +108,51 @@ export const VENUES: Venue[] = [
     hours: 'Daily dawn to dusk',
   },
 
+  // ── Experiences ──
+  {
+    id: 'exp1',
+    name: 'ARTECHOUSE',
+    category: 'EXPERIENCES',
+    color: C.experiences,
+    neighborhood: 'Southwest Waterfront',
+    priceTier: '$$',
+    description: "DC's first interactive digital art gallery — technology and art built into one immersive space.",
+    hours: 'Wed–Sun 10am–9pm',
+  },
+  {
+    id: 'exp2',
+    name: 'Planet Word',
+    category: 'EXPERIENCES',
+    color: C.experiences,
+    neighborhood: 'Mount Vernon Square',
+    priceTier: 'Free',
+    description: "The world's first voice-activated language museum, housed in the historic Franklin School.",
+    hours: 'Tue–Sun 10am–5pm',
+  },
+  {
+    id: 'exp3',
+    name: 'Smithsonian Starstruck',
+    category: 'EXPERIENCES',
+    color: C.experiences,
+    neighborhood: 'Penn Quarter',
+    priceTier: '$$',
+    description: 'A 3D immersive VR journey through real Smithsonian astronomical data — step aboard the telescopes that mapped the universe.',
+    hours: 'Daily 10am–8pm',
+  },
+  {
+    id: 'exp4',
+    name: 'International Spy Museum',
+    category: 'EXPERIENCES',
+    color: C.experiences,
+    neighborhood: "L'Enfant Plaza",
+    priceTier: '$$$',
+    description: 'The largest collection of international espionage artifacts on public display — adopt a cover and test your tradecraft.',
+    hours: 'Daily 9am–6pm',
+  },
+
   // ── Eat & Drink ──
   {
-    id: 'v1',
+    id: 'eat1',
     name: 'The Dabney',
     category: 'EAT & DRINK',
     color: C.eat,
@@ -139,6 +181,16 @@ export const VENUES: Venue[] = [
     description: 'A rotating food hall with DC-born vendors across breakfast, lunch, and dinner.',
     hours: 'Mon–Sat 8am–9pm, Sun 10am–6pm',
   },
+  {
+    id: 'eat4',
+    name: "Ben's Chili Bowl",
+    category: 'EAT & DRINK',
+    color: C.eat,
+    neighborhood: 'U Street',
+    priceTier: '$',
+    description: "A DC institution since 1958 — half-smokes, chili, and a counter that's seen every era of the city pass through.",
+    hours: 'Mon–Thu 6am–2am, Fri–Sat 6am–4am, Sun 11am–8pm',
+  },
 
   // ── Markets ──
   {
@@ -151,6 +203,36 @@ export const VENUES: Venue[] = [
     description: "Capitol Hill's historic public market with local produce, art, and food vendors.",
     hours: 'Tue–Fri 7am–7pm, Sat–Sun 7am–6pm',
   },
+  {
+    id: 'mkt2',
+    name: 'Union Market',
+    category: 'MARKETS',
+    color: C.markets,
+    neighborhood: 'NoMa',
+    priceTier: '$',
+    description: 'An upscale food hall with 40+ vendors in a revitalized former industrial district.',
+    hours: 'Mon–Thu 11am–8pm, Fri–Sat 11am–9pm, Sun 11am–7pm',
+  },
+  {
+    id: 'mkt3',
+    name: 'Georgetown Flea Market',
+    category: 'MARKETS',
+    color: C.markets,
+    neighborhood: 'Georgetown',
+    priceTier: '$',
+    description: 'Sunday-only vintage and antiques market — furniture, jewelry, and collectibles from local and traveling vendors.',
+    hours: 'Sun 8am–4pm',
+  },
+  {
+    id: 'mkt4',
+    name: 'Dupont Circle FRESHFARM Market',
+    category: 'MARKETS',
+    color: C.markets,
+    neighborhood: 'Dupont Circle',
+    priceTier: '$',
+    description: 'A Sunday farmers market with 50+ regional growers — produce, cheese, flowers, and fresh pasta.',
+    hours: 'Sun 8:30am–1:30pm',
+  },
 
   // ── Nightlife ──
   {
@@ -162,5 +244,25 @@ export const VENUES: Venue[] = [
     priceTier: '$$',
     description: "DC's premier underground electronic music venue with world-class DJs.",
     hours: 'Fri–Sat 10pm–4am',
+  },
+  {
+    id: 'night2',
+    name: '9:30 Club',
+    category: 'NIGHTLIFE',
+    color: C.nightlife,
+    neighborhood: 'U Street',
+    priceTier: '$$',
+    description: "DC's legendary live music venue — a different band, a different crowd, most nights of the week.",
+    hours: 'Varies by show, doors typically 7pm',
+  },
+  {
+    id: 'night3',
+    name: 'Blues Alley',
+    category: 'NIGHTLIFE',
+    color: C.nightlife,
+    neighborhood: 'Georgetown',
+    priceTier: '$$$',
+    description: "America's oldest continuously operating jazz supper club — dinner and a show since 1965.",
+    hours: 'Tue–Sun, shows at 8pm and 10pm',
   },
 ];
