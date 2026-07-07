@@ -576,7 +576,7 @@ function ActiveOutingCard({ onNextStop, onSeeDetails }: ActiveOutingCardProps) {
 //  Expo Router tabs or React Navigation)
 // ─────────────────────────────────────────
 
-function BottomNav({ activeTab = 'Home' }) {
+function BottomNav({ activeTab = 'Home', onFabPress }: { activeTab?: string; onFabPress?: () => void }) {
   const insets = useSafeAreaInsets();
   const tabs = [
     { name: 'Home',    Icon: Home },
@@ -591,7 +591,7 @@ function BottomNav({ activeTab = 'Home' }) {
         if (tab.name === 'Outing') {
           return (
             <View key="fab" style={styles.fabWrap}>
-              <Pressable style={styles.fab}>
+              <Pressable style={styles.fab} onPress={onFabPress}>
                 <Sparkles size={24} color="#FFFFFF" />
               </Pressable>
             </View>
@@ -730,7 +730,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Bottom nav */}
-      <BottomNav activeTab="Home" />
+      <BottomNav activeTab="Home" onFabPress={() => router.push('/outing-questions')} />
     </View>
   );
 }
