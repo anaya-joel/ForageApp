@@ -11,6 +11,7 @@ export type Category =
   | 'OUTDOORS'
   | 'EAT & DRINK'
   | 'MARKETS'
+  | 'EXPERIENCES'
   | 'NIGHTLIFE';
 
 export type BudgetTier = 'Free' | '$' | '$$' | '$$$';
@@ -81,20 +82,27 @@ function pickWithVariety(pool: Venue[], count: number): Venue[] {
 }
 
 /**
- * Fallback ladder (relax category first, then budget) — keeps the user's
- * stated spend hard as long as possible, widening to other categories
- * before pulling in venues outside the requested budget.
+ * Fallback ladder (relax category first, then budget) — returns matches in
+ * two tiers instead of one flat list, so exact category+budget matches are
+ * never lost when the pool has to widen to fill remaining stops.
  */
-function selectPool(categories: Category[], budget: BudgetTier, stopCount: number): Venue[] {
-  const byCategoryAndBudget = VENUES.filter(
+function selectPool(
+  categories: Category[],
+  budget: BudgetTier,
+  stopCount: number
+): { exact: Venue[]; widened: Venue[] } {
+  const exact = VENUES.filter(
     v => categories.includes(v.category as Category) && budgetAllows(v.priceTier, budget)
   );
-  if (byCategoryAndBudget.length >= stopCount) return byCategoryAndBudget;
+  if (exact.length >= stopCount) return { exact, widened: [] };
 
+  const exactIds = new Set(exact.map(v => v.id));
   const byBudgetOnly = VENUES.filter(v => budgetAllows(v.priceTier, budget));
-  if (byBudgetOnly.length >= stopCount) return byBudgetOnly;
+  if (byBudgetOnly.length >= stopCount) {
+    return { exact, widened: byBudgetOnly.filter(v => !exactIds.has(v.id)) };
+  }
 
-  return VENUES;
+  return { exact, widened: VENUES.filter(v => !exactIds.has(v.id)) };
 }
 
 // ─────────────────────────────────────────
@@ -148,6 +156,14 @@ const CATEGORY_TEMPLATES: Record<Category, { names: string[]; captions: string[]
       'Music, drinks, and a late start home.',
       'The night gets better from here.',
       'DC after the sun goes down.',
+    ],
+  },
+  EXPERIENCES: {
+    names: ['DC Wildcard Loop', 'Something Different Circuit', 'Off-Script DC Day'],
+    captions: [
+      'Not a museum. Not a bar. Something else entirely.',
+      'For when "normal" outing sounds boring.',
+      'DC has more going on than you think.',
     ],
   },
 };
@@ -210,6 +226,7 @@ const CATEGORY_TAG_MAP: Record<Category, string> = {
   'EAT & DRINK': 'Foodie',
   MARKETS: 'Local',
   NIGHTLIFE: 'Late-night',
+  EXPERIENCES: 'Immersive',
 };
 
 function buildVibeTags(vibes: string[], categories: Category[]): string[] {
@@ -232,13 +249,17 @@ function buildVibeTags(vibes: string[], categories: Category[]): string[] {
 export function generatePlan(inputs: PlanInputs): OutingPlan {
   const stopCount = getStopCountForTime(inputs.timeOfDay ?? new Date());
 
-  const pool = selectPool(inputs.categories, inputs.budget, stopCount);
-  const selected = pickWithVariety(pool, stopCount);
+  const { exact, widened } = selectPool(inputs.categories, inputs.budget, stopCount);
 
-  const substitutedCategories = [...new Set(selected.map(v => v.category))].filter(
-    category => !inputs.categories.includes(category as Category)
-  );
-  const fallbackFired = substitutedCategories.length > 0;
+  let selected: Venue[];
+  if (exact.length >= stopCount) {
+    selected = pickWithVariety(exact, stopCount);
+  } else {
+    const fill = pickWithVariety(widened, stopCount - exact.length);
+    selected = [...exact, ...fill];
+  }
+
+  const fallbackFired = exact.length < stopCount;
 
   const templates = fallbackFired ? FALLBACK_TEMPLATES : CATEGORY_TEMPLATES[dominantCategory(selected)];
   const name = pickOne(templates.names);
