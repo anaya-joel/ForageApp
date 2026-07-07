@@ -23,6 +23,7 @@ import {
   Pencil,
 } from 'lucide-react-native';
 import { getCatIcon } from './_category-icons';
+import { generatePlan, type Category, type PlanInputs } from './_generate-plan';
 import { C } from '../data/colors';
 import { VENUES, type Venue } from '../data/venues';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -39,11 +40,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ALTERNATE_PLAN,
   beginOuting,
   getCurrentPlan,
   getDraftById,
-  INITIAL_PLAN,
   saveDraftFromCurrent,
   setCurrentPlan,
   type OutingPlan,
@@ -84,6 +83,24 @@ function estimatedHrs(stops: Stop[]) {
 }
 
 const TIER_ORDER = ['Free', '$', '$$', '$$$'];
+
+function deriveInputsFromPlan(plan: OutingPlan): PlanInputs {
+  const categories = [...new Set(plan.stops.map((s) => s.category))] as Category[];
+
+  const budget = plan.stops.length
+    ? plan.stops.reduce((max: string, s) => {
+        const rank = TIER_ORDER.indexOf(s.priceTier);
+        return rank > TIER_ORDER.indexOf(max) ? s.priceTier : max;
+      }, 'Free') as PlanInputs['budget']
+    : '$$';
+
+  return {
+    categories,
+    vibes: plan.vibeTags.map((t) => t.toLowerCase()),
+    budget,
+    timeOfDay: new Date(),
+  };
+}
 
 function tierRange(stops: Stop[]): string {
   const paid = stops.map((s) => s.priceTier).filter((t) => t !== 'Free');
@@ -621,18 +638,16 @@ export default function OutingPreviewScreen() {
 
   function handleGenerate() {
     setIsRegenerating(true);
-    const next = plan.variant === 'initial' ? ALTERNATE_PLAN : INITIAL_PLAN;
-    const nextCopy: OutingPlan = { ...next, stops: [...next.stops] };
-    setTimeout(() => {
-      setPlan(nextCopy);
-      setCurrentPlan(nextCopy);
-      originalPlanRef.current = nextCopy;
-      setIsDirty(false);
-      setIsRegenerating(false);
-      setEditMode(false);
-      setIsEditingName(false);
-      setIsEditingCaption(false);
-    }, 1800);
+    const inputs = deriveInputsFromPlan(plan);
+    const nextPlan = generatePlan(inputs);
+    setPlan(nextPlan);
+    setCurrentPlan(nextPlan);
+    originalPlanRef.current = nextPlan;
+    setIsDirty(false);
+    setIsRegenerating(false);
+    setEditMode(false);
+    setIsEditingName(false);
+    setIsEditingCaption(false);
   }
 
   function handleRemoveStop(id: string) {
