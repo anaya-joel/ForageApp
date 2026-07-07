@@ -17,9 +17,12 @@ import {
   getCurrentPlan,
   goToPreviousStop,
   isOutingComplete,
+  setCurrentPlan,
   type OutingPlan,
   type Stop,
 } from './_outing-store';
+import { generatePlan } from './_generate-plan';
+import { deriveInputsFromPlan } from './outing-preview';
 import {
   ArrowLeft,
   Bus,
@@ -81,6 +84,17 @@ const F = {
 // ─────────────────────────────────────────
 //  HELPERS
 // ─────────────────────────────────────────
+
+// Regenerate the home screen's Scout suggestion so it doesn't just keep
+// showing the outing that was finished/ended. There's no taste-profile
+// store yet, so this derives inputs from the just-completed plan itself
+// (same helper the "Regenerate" button in outing-preview.tsx uses) rather
+// than reusing hardcoded or empty values.
+function regenerateScoutSuggestion(finishedPlan: OutingPlan) {
+  const inputs = deriveInputsFromPlan(finishedPlan);
+  const nextPlan = generatePlan(inputs);
+  setCurrentPlan(nextPlan);
+}
 
 
 // ─────────────────────────────────────────
@@ -223,6 +237,7 @@ export default function ActiveOutingScreen() {
 
 useEffect(() => {
   if (!currentStop) {
+    regenerateScoutSuggestion(plan);
     endOuting();
     router.replace('/');
   }
@@ -263,6 +278,7 @@ const transportOptions: TransportOpt[] = connector ? [
   function handleCompleteStop() {
     completeCurrentStop();
     if (isOutingComplete()) {
+      regenerateScoutSuggestion(getCurrentPlan());
       endOuting();
       router.replace('/');
     } else {
@@ -272,6 +288,7 @@ const transportOptions: TransportOpt[] = connector ? [
 
   // No confirmation sheet yet — end outing goes straight home (future prompt).
   function handleEndOuting() {
+    regenerateScoutSuggestion(getCurrentPlan());
     endOuting();
     router.replace('/');
   }

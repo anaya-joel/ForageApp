@@ -246,3 +246,28 @@ different tie-break (e.g. category order in the master spec's fixed list).
 app/_dev-rating-test.tsx is a temporary scaffold for testing rating
 components in isolation before Active Outing detail screen exists; delete
 once real wiring is in place.
+
+## [7/7] — Home Scout suggestion regeneration on outing-end is a proxy, not real personalization
+
+app/active-outing.tsx now regenerates the home screen's Scout's Pick when an
+outing ends (natural completion via the currentStop-null useEffect, the
+isOutingComplete() branch after the final stop, and early End Outing), so
+the home screen stops showing the exact same finished plan. This replaces
+an earlier, reverted attempt that called generatePlan() with hardcoded/empty
+PlanInputs.
+
+Input source used: `deriveInputsFromPlan()`, exported from
+app/outing-preview.tsx (previously local/unexported; used there by the
+"Regenerate" button). It derives PlanInputs from the just-finished
+OutingPlan's own data — categories from its stops, budget from the max
+price tier among its stops, vibes from its vibeTags.
+
+This is NOT real taste-profile-based personalization. There is no
+taste-profile or onboarding-answers store anywhere in this codebase today
+(confirmed by grep across app/, lib/, data/, store/) — the FAB flow's
+PlanInputs (app/outing-questions.tsx) come from raw local component state
+set by direct user taps, not from any persisted store. `deriveInputsFromPlan`
+is a proxy: the next suggestion reflects the categories/vibes/budget of the
+outing the user just did, not any modeled preference. Revisit once a real
+taste-profile/onboarding system exists — at that point this call site
+should switch to that system's input source instead.

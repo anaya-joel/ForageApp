@@ -84,7 +84,7 @@ function estimatedHrs(stops: Stop[]) {
 
 const TIER_ORDER = ['Free', '$', '$$', '$$$'];
 
-function deriveInputsFromPlan(plan: OutingPlan): PlanInputs {
+export function deriveInputsFromPlan(plan: OutingPlan): PlanInputs {
   const categories = [...new Set(plan.stops.map((s) => s.category))] as Category[];
 
   const budget = plan.stops.length
