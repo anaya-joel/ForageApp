@@ -45,9 +45,27 @@ const CATEGORIES: Category[] = [
   'MARKETS',
 ];
 
+function getCategoryColor(cat: Category): string {
+  switch (cat) {
+    case 'EAT & DRINK':    return C.eat;
+    case 'COFFEE & CAFÉS': return C.coffee;
+    case 'OUTDOORS':       return C.outdoors;
+    case 'ARTS & CULTURE': return C.arts;
+    case 'EXPERIENCES':    return C.experiences;
+    case 'NIGHTLIFE':      return C.nightlife;
+    case 'MARKETS':        return C.markets;
+    default:                return C.textPrimary;
+  }
+}
+
+const CATEGORY_ROWS: Category[][] = [];
+for (let i = 0; i < CATEGORIES.length; i += 2) {
+  CATEGORY_ROWS.push(CATEGORIES.slice(i, i + 2));
+}
+
 const BUDGETS: BudgetTier[] = ['Free', '$', '$$', '$$$'];
 
-const VIBES = ['Chill', 'Social', 'Active', 'Artsy', 'Foodie', 'Nightlife'];
+const VIBES = ['Chill', 'Social', 'Active', 'Romantic', 'Artsy', 'Foodie'];
 
 // ─────────────────────────────────────────
 //  MAIN SCREEN
@@ -109,7 +127,7 @@ export default function OutingQuestionsScreen() {
             <ChevronLeft size={22} color={C.textPrimary} />
           </Pressable>
           <View style={styles.headerContent}>
-            <Text style={styles.title}>What sounds good?</Text>
+            <Text style={styles.title}>Tell me what you're after.</Text>
             <Text style={styles.subtitle}>Three questions. Then I'll take it from here.</Text>
           </View>
         </View>
@@ -124,21 +142,25 @@ export default function OutingQuestionsScreen() {
         {/* Section 1 — Category */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Category</Text>
-          <View style={styles.chipRow}>
-            {CATEGORIES.map((cat) => {
-              const CatIcon = getCatIcon(cat);
-              const selected = selectedCategories.includes(cat);
-              return (
-                <Pressable
-                  key={cat}
-                  style={[styles.chip, selected && styles.chipSelected]}
-                  onPress={() => toggleCategory(cat)}
-                >
-                  <CatIcon size={14} color={selected ? C.amber : C.textPrimary} />
-                  <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{cat}</Text>
-                </Pressable>
-              );
-            })}
+          <View style={styles.tileGrid}>
+            {CATEGORY_ROWS.map((row, idx) => (
+              <View key={idx} style={[styles.tileRow, row.length === 1 && styles.tileRowCentered]}>
+                {row.map((cat) => {
+                  const CatIcon = getCatIcon(cat);
+                  const selected = selectedCategories.includes(cat);
+                  return (
+                    <Pressable
+                      key={cat}
+                      style={[styles.tile, selected && styles.tileSelected]}
+                      onPress={() => toggleCategory(cat)}
+                    >
+                      <CatIcon size={28} color={selected ? getCategoryColor(cat) : C.textPrimary} />
+                      <Text style={[styles.tileLabel, selected && styles.tileLabelSelected]}>{cat}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ))}
           </View>
         </View>
 
@@ -286,6 +308,45 @@ const styles = StyleSheet.create({
     color: C.textPrimary,
   },
   chipTextSelected: {
+    color: C.amber,
+  },
+
+  // ── Category tiles (2-column grid) ──
+  tileGrid: {
+    flexDirection: 'column',
+  },
+  tileRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  tileRowCentered: {
+    justifyContent: 'center',
+  },
+  tile: {
+    width: '48%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: C.card,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 14,
+    paddingVertical: 14,
+  },
+  tileSelected: {
+    backgroundColor: C.amberTint,
+    borderWidth: 1.5,
+    borderColor: C.amber,
+  },
+  tileLabel: {
+    fontFamily: F.med,
+    fontSize: 12,
+    color: C.textPrimary,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  tileLabelSelected: {
     color: C.amber,
   },
 
