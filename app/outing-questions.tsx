@@ -67,6 +67,11 @@ const BUDGETS: BudgetTier[] = ['Free', '$', '$$', '$$$'];
 
 const VIBES = ['Chill', 'Social', 'Active', 'Romantic', 'Artsy', 'Foodie'];
 
+const VIBE_ROWS: string[][] = [];
+for (let i = 0; i < VIBES.length; i += 3) {
+  VIBE_ROWS.push(VIBES.slice(i, i + 3));
+}
+
 // ─────────────────────────────────────────
 //  MAIN SCREEN
 // ─────────────────────────────────────────
@@ -188,19 +193,23 @@ export default function OutingQuestionsScreen() {
         {/* Section 3 — Vibe */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Vibe</Text>
-          <View style={styles.chipRow}>
-            {VIBES.map((vibe) => {
-              const selected = selectedVibes.includes(vibe);
-              return (
-                <Pressable
-                  key={vibe}
-                  style={[styles.chip, selected && styles.chipSelected]}
-                  onPress={() => toggleVibe(vibe)}
-                >
-                  <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{vibe}</Text>
-                </Pressable>
-              );
-            })}
+          <View style={styles.vibeGrid}>
+            {VIBE_ROWS.map((row, idx) => (
+              <View key={idx} style={styles.vibeRow}>
+                {row.map((vibe) => {
+                  const selected = selectedVibes.includes(vibe);
+                  return (
+                    <Pressable
+                      key={vibe}
+                      style={[styles.chip, styles.vibePill, selected && styles.chipSelected]}
+                      onPress={() => toggleVibe(vibe)}
+                    >
+                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{vibe}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ))}
           </View>
         </View>
       </ScrollView>
@@ -280,12 +289,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  // ── Chips (category / vibe) ──
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
+  // ── Chips (vibe) ──
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -309,6 +313,20 @@ const styles = StyleSheet.create({
   },
   chipTextSelected: {
     color: C.amber,
+  },
+
+  // ── Vibe grid (3-column) ──
+  vibeGrid: {
+    flexDirection: 'column',
+  },
+  vibeRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  vibePill: {
+    flex: 1,
+    justifyContent: 'center',
   },
 
   // ── Category tiles (2-column grid) ──
