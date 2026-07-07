@@ -155,7 +155,7 @@ export default function OutingQuestionsScreen() {
                       onPress={() => toggleCategory(cat)}
                     >
                       <CatIcon size={28} color={selected ? getCategoryColor(cat) : C.textPrimary} />
-                      <Text style={[styles.tileLabel, selected && styles.tileLabelSelected]}>{cat}</Text>
+                      <Text style={[styles.tileLabel, selected && { color: getCategoryColor(cat) }]}>{cat}</Text>
                     </Pressable>
                   );
                 })}
@@ -273,8 +273,8 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontFamily: F.semi,
-    fontSize: 10,
-    color: C.textTert,
+    fontSize: 11,
+    color: C.textSec,
     letterSpacing: 1,
     textTransform: 'uppercase',
     marginBottom: 10,
@@ -345,9 +345,6 @@ const styles = StyleSheet.create({
     color: C.textPrimary,
     textAlign: 'center',
     marginTop: 8,
-  },
-  tileLabelSelected: {
-    color: C.amber,
   },
 
   // ── Segmented row (budget) ──
