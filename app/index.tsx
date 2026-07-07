@@ -293,7 +293,11 @@ function pickForYouVenues(venues: Venue[], count: number): Venue[] {
   return result;
 }
 
-/** In-memory only — matches the existing accepted gap of no persistence elsewhere in this file. */
+/** 
+ * Cached for the current app session only — resets on cold start since 
+ * there's no persistence layer (matches the project's broader no-persistence 
+ * v1 scope). Not truly "daily"; stable only while the app stays running.
+ */
 let forYouCache: { date: string; venueIds: string[] } | null = null;
 
 function getLocalDateString(date: Date): string {
@@ -997,10 +1001,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingTop: 10,
     paddingBottom: 8,
-    height: 84,
+    height: 89,
   },
   fyNameWrap: {
-    height: 35,
+    height: 40,
     marginBottom: 6,
   },
   fyName: {
