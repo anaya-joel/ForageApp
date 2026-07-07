@@ -14,10 +14,10 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import {
   completeCurrentStop,
   endOuting,
-  getCurrentPlan,
+  getActiveOuting,
   goToPreviousStop,
   isOutingComplete,
-  setCurrentPlan,
+  setScoutSuggestion,
   type OutingPlan,
   type Stop,
 } from './_outing-store';
@@ -93,7 +93,7 @@ const F = {
 function regenerateScoutSuggestion(finishedPlan: OutingPlan) {
   const inputs = deriveInputsFromPlan(finishedPlan);
   const nextPlan = generatePlan(inputs);
-  setCurrentPlan(nextPlan);
+  setScoutSuggestion(nextPlan);
 }
 
 
@@ -221,16 +221,24 @@ export default function ActiveOutingScreen() {
     PlusJakartaSans_600SemiBold,
   });
 
-  const [plan, setPlan]               = useState<OutingPlan>(() => getCurrentPlan());
+  const [plan, setPlan]               = useState<OutingPlan | null>(() => getActiveOuting());
   const [savedStopIds, setSavedStopIds] = useState<Set<string>>(new Set());
 
   useFocusEffect(
     useCallback(() => {
-      setPlan(getCurrentPlan());
+      setPlan(getActiveOuting());
     }, [])
   );
 
   if (!fontsLoaded && !fontError) return null;
+
+useEffect(() => {
+  if (!plan) {
+    router.replace('/');
+  }
+}, [plan]);
+
+if (!plan) return null;
 
   const currentStop: Stop | undefined = plan.stops[plan.currentStopIndex];
   const nextStop: Stop | undefined    = plan.stops[plan.currentStopIndex + 1];
@@ -272,23 +280,23 @@ const transportOptions: TransportOpt[] = connector ? [
 
   function handlePreviousStop() {
     goToPreviousStop();
-    setPlan(getCurrentPlan());
+    setPlan(getActiveOuting());
   }
 
   function handleCompleteStop() {
     completeCurrentStop();
     if (isOutingComplete()) {
-      regenerateScoutSuggestion(getCurrentPlan());
+      regenerateScoutSuggestion(getActiveOuting()!);
       endOuting();
       router.replace('/');
     } else {
-      setPlan(getCurrentPlan());
+      setPlan(getActiveOuting());
     }
   }
 
   // No confirmation sheet yet — end outing goes straight home (future prompt).
   function handleEndOuting() {
-    regenerateScoutSuggestion(getCurrentPlan());
+    regenerateScoutSuggestion(getActiveOuting()!);
     endOuting();
     router.replace('/');
   }

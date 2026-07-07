@@ -9,9 +9,6 @@
  *   npm install lucide-react-native
  *
  * PUT logo_app.png in:  assets/images/scout.png
- *
- * The homeState variable ('A' | 'B' | 'C') will eventually come from
- * your app-level state/context (Redux, Zustand, etc.). For now it's local.
  */
 
 import { LibreBaskerville_700Bold } from '@expo-google-fonts/libre-baskerville';
@@ -41,7 +38,8 @@ import { VENUES, type Venue } from '../data/venues';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  getCurrentPlan,
+  getActiveOuting,
+  getScoutSuggestion,
   getDrafts,
   getMostRecentDraft,
   type OutingPlan,
@@ -75,25 +73,6 @@ const F = {
 //  SAMPLE DATA  (replace with API / state)
 // ─────────────────────────────────────────
 
-const ACTIVE_OUTING = {
-  name: 'Spring Art & Park Walk',
-  startTime: '9:14 AM',
-  totalStops: 5,
-  completedStops: 2,
-  currentStop: {
-    label: 'CURRENT STOP 3 OF 5',
-    place: 'National Gallery of Art',
-    neighborhood: 'National Mall',
-    categoryLabel: 'ARTS & CULTURE',
-    categoryColor: C.arts,
-  },
-  nextStop: {
-    label: 'NEXT UP · STOP 4',
-    place: 'Dumbarton Oaks',
-    categoryColor: C.outdoors,
-  },
-};
-
 const SAVED_PLACE_COUNT = 4; // >= 3 shows Build Around card
 
 type PressHandlerProps = {
@@ -101,9 +80,15 @@ type PressHandlerProps = {
 };
 
 type ActiveOutingCardProps = {
+  plan: OutingPlan;
   onNextStop?: () => void;
   onSeeDetails?: () => void;
 };
+
+function formatStartTime(startTime: number | null): string {
+  if (startTime == null) return '—';
+  return new Date(startTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
 
 type ProgressStripProps = {
   total: number;
@@ -485,9 +470,15 @@ function ProgressStrip({ total, completed }: ProgressStripProps) {
   );
 }
 
-function ActiveOutingCard({ onNextStop, onSeeDetails }: ActiveOutingCardProps) {
-  const { name, startTime, totalStops, completedStops, currentStop, nextStop } = ACTIVE_OUTING;
+function ActiveOutingCard({ plan, onNextStop, onSeeDetails }: ActiveOutingCardProps) {
   const [stopSaved, setStopSaved] = useState(false);
+
+  const totalStops     = plan.stops.length;
+  const completedStops = plan.currentStopIndex;
+  const currentStop    = plan.stops[plan.currentStopIndex];
+  const nextStop       = plan.stops[plan.currentStopIndex + 1];
+
+  if (!currentStop) return null;
 
   return (
     <View style={[styles.card, styles.activeCard]}>
@@ -497,27 +488,27 @@ function ActiveOutingCard({ onNextStop, onSeeDetails }: ActiveOutingCardProps) {
           <AmberDot pulse />
           <Text style={styles.activeLabelText}>ACTIVE OUTING</Text>
         </View>
-        <Text style={styles.activeStartTime}>Started {startTime}</Text>
+        <Text style={styles.activeStartTime}>Started {formatStartTime(plan.startTime)}</Text>
       </View>
 
       {/* Outing name */}
-      <Text style={styles.activeOutingName} numberOfLines={1}>{name}</Text>
+      <Text style={styles.activeOutingName} numberOfLines={1}>{plan.name}</Text>
 
       {/* Progress strip */}
       <ProgressStrip total={totalStops} completed={completedStops} />
 
       {/* Current stop block */}
       <View style={styles.curStopBlock}>
-        <Text style={styles.curStopLabel}>{currentStop.label}</Text>
+        <Text style={styles.curStopLabel}>CURRENT STOP {completedStops + 1} OF {totalStops}</Text>
         <View style={styles.curStopRow}>
           {/* Photo placeholder */}
-          <View style={[styles.curPhoto, { backgroundColor: currentStop.categoryColor }]} />
+          <View style={[styles.curPhoto, { backgroundColor: currentStop.color }]} />
           {/* Info */}
           <View style={styles.curInfo}>
-            <View style={[styles.curCatPill, { backgroundColor: currentStop.categoryColor }]}>
-              <Text style={styles.curCatText}>{currentStop.categoryLabel}</Text>
+            <View style={[styles.curCatPill, { backgroundColor: currentStop.color }]}>
+              <Text style={styles.curCatText}>{currentStop.category}</Text>
             </View>
-            <Text style={styles.curPlaceName}>{currentStop.place}</Text>
+            <Text style={styles.curPlaceName}>{currentStop.name}</Text>
             <Text style={styles.curNeighborhood}>{currentStop.neighborhood}</Text>
           </View>
         </View>
@@ -536,19 +527,21 @@ function ActiveOutingCard({ onNextStop, onSeeDetails }: ActiveOutingCardProps) {
       </View>
 
       {/* Next up row */}
-      <View style={styles.nextUpRow}>
-        <View style={styles.nextUpLeft}>
-          <View style={[styles.nextUpCircle, { backgroundColor: nextStop.categoryColor }]} />
-          <View>
-            <Text style={styles.nextUpLabel}>{nextStop.label}</Text>
-            <Text style={styles.nextUpPlace}>{nextStop.place}</Text>
+      {nextStop && (
+        <View style={styles.nextUpRow}>
+          <View style={styles.nextUpLeft}>
+            <View style={[styles.nextUpCircle, { backgroundColor: nextStop.color }]} />
+            <View>
+              <Text style={styles.nextUpLabel}>NEXT UP · STOP {completedStops + 2}</Text>
+              <Text style={styles.nextUpPlace}>{nextStop.name}</Text>
+            </View>
           </View>
+          <Pressable style={styles.directionsBtn} onPress={() => {}}>
+            <Navigation size={12} color="#FFFFFF" />
+            <Text style={styles.directionsBtnText}>Directions</Text>
+          </Pressable>
         </View>
-        <Pressable style={styles.directionsBtn} onPress={() => {}}>
-          <Navigation size={12} color="#FFFFFF" />
-          <Text style={styles.directionsBtnText}>Directions</Text>
-        </Pressable>
-      </View>
+      )}
 
       {/* Previous stop — hidden on stop 1 */}
       {completedStops >= 1 && (
@@ -633,8 +626,6 @@ function getGreeting(name: string) {
 // ─────────────────────────────────────────
 
 export default function HomeScreen() {
-  // 'A' = no outing · 'B' = draft in progress · 'C' = active outing
-  const [homeState, setHomeState] = useState('A');
   const [, setRefreshTick] = useState(0);
 
   useFocusEffect(
@@ -661,8 +652,10 @@ export default function HomeScreen() {
 
   if (!fontsLoaded && !fontError) return null;
 
-  const drafts      = getDrafts();
-  const derivedState = drafts.length > 0 ? 'B' : 'A';
+  // 'C' = active outing · 'B' = draft in progress · 'A' = no outing
+  const activeOuting  = getActiveOuting();
+  const drafts        = getDrafts();
+  const derivedState  = activeOuting !== null ? 'C' : drafts.length > 0 ? 'B' : 'A';
 
   return (
     <View style={styles.screen}>
@@ -680,21 +673,22 @@ export default function HomeScreen() {
         {/* Greeting */}
         <Text style={styles.greeting}>{getGreeting('Joel')}</Text>
 
-        {/* ── STATE C: Active outing hero (dev-switcher only) ── */}
-        {homeState === 'C' && (
+        {/* ── STATE C: Active outing hero ── */}
+        {derivedState === 'C' && activeOuting && (
           <ActiveOutingCard
+            plan={activeOuting}
             onNextStop={() => {/* navigate to Active Outing Detail */}}
             onSeeDetails={() => {/* navigate to Active Outing Detail */}}
           />
         )}
 
         {/* ── STATE A: Scout suggestion ── */}
-        {homeState !== 'C' && derivedState === 'A' && (
-          <ScoutCard onPress={() => router.push('/outing-preview')} plan={getCurrentPlan()} />
+        {derivedState === 'A' && (
+          <ScoutCard onPress={() => router.push('/outing-preview')} plan={getScoutSuggestion()} />
         )}
 
         {/* ── STATE B: Draft + Scout also suggests ── */}
-        {homeState !== 'C' && derivedState === 'B' && (
+        {derivedState === 'B' && (
           <>
             {getMostRecentDraft() != null && (
               <OutingDraftCard
@@ -703,7 +697,7 @@ export default function HomeScreen() {
               />
             )}
             {/* Full Scout card below the label */}
-            <ScoutCard onPress={() => router.push('/outing-preview')} plan={getCurrentPlan()} />
+            <ScoutCard onPress={() => router.push('/outing-preview')} plan={getScoutSuggestion()} />
           </>
         )}
 
@@ -712,21 +706,6 @@ export default function HomeScreen() {
 
         {/* Build Around — shown when user has 3+ saved places */}
         <BuildAroundCard />
-
-        {/* DEV ONLY: state switcher — remove before shipping */}
-        <View style={styles.devSwitcher}>
-          {['A', 'B', 'C'].map(s => (
-            <Pressable
-              key={s}
-              style={[styles.devBtn, homeState === s && styles.devBtnActive]}
-              onPress={() => setHomeState(s)}
-            >
-              <Text style={[styles.devBtnText, homeState === s && { color: '#fff' }]}>
-                State {s}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
       </ScrollView>
 
       {/* Bottom nav */}
@@ -1476,27 +1455,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.48,
     shadowRadius: 18,
     elevation: 8,
-  },
-
-  // ── Dev switcher (remove before shipping) ──
-  devSwitcher: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 32,
-    justifyContent: 'center',
-  },
-  devBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#EDE8E2',
-  },
-  devBtnActive: {
-    backgroundColor: C.textPrimary,
-  },
-  devBtnText: {
-    fontFamily: F.semi,
-    fontSize: 12,
-    color: C.textPrimary,
   },
 });

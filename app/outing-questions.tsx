@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCatIcon } from './_category-icons';
 import { C } from '../data/colors';
 import { generatePlan, type BudgetTier, type Category, type PlanInputs } from './_generate-plan';
-import { setCurrentPlan } from './_outing-store';
+import { setWorkingPlan } from './_outing-store';
 
 // ─────────────────────────────────────────
 //  DESIGN TOKENS
@@ -113,7 +113,7 @@ export default function OutingQuestionsScreen() {
       timeOfDay: new Date(),
     };
     const plan = generatePlan(inputs);
-    setCurrentPlan(plan);
+    setWorkingPlan(plan);
     router.push('/outing-preview');
   }
 

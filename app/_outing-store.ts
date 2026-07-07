@@ -157,19 +157,46 @@ export const ALTERNATE_PLAN: OutingPlan = {
 
 const DRAFT_CAP = 5;
 
-let _currentPlan: OutingPlan = { ...INITIAL_PLAN, stops: [...INITIAL_PLAN.stops] };
+// The standing Scout's Pick shown on Home. Only changes via daily/time-of-day
+// rotation logic or the outing-end regeneration in app/active-outing.tsx.
+let _scoutSuggestion: OutingPlan = { ...INITIAL_PLAN, stops: [...INITIAL_PLAN.stops] };
+
+// Whatever plan is currently being previewed or edited (fresh FAB-generated
+// plan, an edited copy of Scout's Pick, or a draft opened for editing).
+// Transient — null when nothing is being worked on.
+let _workingPlan: OutingPlan | null = null;
+
+// The in-progress outing, once begun. Separate from both slots above.
+let _activeOuting: OutingPlan | null = null;
+
 let _drafts: OutingPlan[] = [];
 
 // ─────────────────────────────────────────
-//  PLAN API
+//  SCOUT SUGGESTION API
 // ─────────────────────────────────────────
 
-export function getCurrentPlan(): OutingPlan {
-  return _currentPlan;
+export function getScoutSuggestion(): OutingPlan {
+  return _scoutSuggestion;
 }
 
-export function setCurrentPlan(plan: OutingPlan): void {
-  _currentPlan = plan;
+export function setScoutSuggestion(plan: OutingPlan): void {
+  _scoutSuggestion = plan;
+}
+
+// ─────────────────────────────────────────
+//  WORKING PLAN API
+// ─────────────────────────────────────────
+
+export function getWorkingPlan(): OutingPlan | null {
+  return _workingPlan;
+}
+
+export function setWorkingPlan(plan: OutingPlan): void {
+  _workingPlan = plan;
+}
+
+export function clearWorkingPlan(): void {
+  _workingPlan = null;
 }
 
 // ─────────────────────────────────────────
@@ -188,21 +215,18 @@ export function getDraftById(id: string): OutingPlan | undefined {
   return _drafts.find((d) => d.id === id);
 }
 
-function resetToUnusedVariant(): void {
-  const nextVariant: OutingVariant = _currentPlan.variant === 'initial' ? 'alternate' : 'initial';
-  const nextBase = nextVariant === 'initial' ? INITIAL_PLAN : ALTERNATE_PLAN;
-  _currentPlan = { ...nextBase, stops: [...nextBase.stops] };
-}
-
 export function saveDraftFromCurrent(): { success: boolean; capReached: boolean } {
-  const existingIdx = _drafts.findIndex((d) => d.id === _currentPlan.id);
+  if (!_workingPlan) return { success: false, capReached: false };
+  const workingPlan = _workingPlan;
+
+  const existingIdx = _drafts.findIndex((d) => d.id === workingPlan.id);
 
   const draft: OutingPlan = {
-    ..._currentPlan,
+    ...workingPlan,
     id: existingIdx !== -1
       ? _drafts[existingIdx].id
       : `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    stops: [..._currentPlan.stops],
+    stops: [...workingPlan.stops],
     isDraft: true,
     lastEdited: Date.now(),
   };
@@ -210,7 +234,7 @@ export function saveDraftFromCurrent(): { success: boolean; capReached: boolean 
   if (existingIdx !== -1) {
     _drafts[existingIdx] = draft;
     _drafts.sort((a, b) => (b.lastEdited ?? 0) - (a.lastEdited ?? 0));
-    resetToUnusedVariant();
+    _workingPlan = null;
     return { success: true, capReached: false };
   }
 
@@ -220,7 +244,7 @@ export function saveDraftFromCurrent(): { success: boolean; capReached: boolean 
 
   _drafts.push(draft);
   _drafts.sort((a, b) => (b.lastEdited ?? 0) - (a.lastEdited ?? 0));
-  resetToUnusedVariant();
+  _workingPlan = null;
   return { success: true, capReached: false };
 }
 
@@ -239,36 +263,53 @@ export function deleteDraft(id: string): void {
 //  ACTIVE OUTING API
 // ─────────────────────────────────────────
 
+export function getActiveOuting(): OutingPlan | null {
+  return _activeOuting;
+}
+
+export function setActiveOuting(plan: OutingPlan): void {
+  _activeOuting = plan;
+}
+
+export function clearActiveOuting(): void {
+  _activeOuting = null;
+}
+
 export function beginOuting(): void {
-  _currentPlan = {
-    ..._currentPlan,
+  // Reads workingPlan (an edited/generated plan) or falls back to
+  // scoutSuggestion if the user tapped Begin directly off Scout's Pick
+  // without editing first.
+  const source = _workingPlan ?? _scoutSuggestion;
+  _activeOuting = {
+    ...source,
     hasBegun: true,
     startTime: Date.now(),
     currentStopIndex: 0,
   };
+  _workingPlan = null;
 }
 
 export function completeCurrentStop(): void {
-  _currentPlan = {
-    ..._currentPlan,
-    currentStopIndex: Math.min(_currentPlan.currentStopIndex + 1, _currentPlan.stops.length),
+  if (!_activeOuting) return;
+  _activeOuting = {
+    ..._activeOuting,
+    currentStopIndex: Math.min(_activeOuting.currentStopIndex + 1, _activeOuting.stops.length),
   };
 }
 
 export function goToPreviousStop(): void {
-  _currentPlan = {
-    ..._currentPlan,
-    currentStopIndex: Math.max(_currentPlan.currentStopIndex - 1, 0),
+  if (!_activeOuting) return;
+  _activeOuting = {
+    ..._activeOuting,
+    currentStopIndex: Math.max(_activeOuting.currentStopIndex - 1, 0),
   };
 }
 
 export function endOuting(): void {
-  _currentPlan = {
-    ..._currentPlan,
-    hasBegun: false,
-  };
+  clearActiveOuting();
 }
 
 export function isOutingComplete(): boolean {
-  return _currentPlan.currentStopIndex >= _currentPlan.stops.length;
+  if (!_activeOuting) return false;
+  return _activeOuting.currentStopIndex >= _activeOuting.stops.length;
 }

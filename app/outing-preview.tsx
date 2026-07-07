@@ -41,10 +41,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   beginOuting,
-  getCurrentPlan,
   getDraftById,
+  getScoutSuggestion,
+  getWorkingPlan,
   saveDraftFromCurrent,
-  setCurrentPlan,
+  setWorkingPlan,
+  clearWorkingPlan,
   type OutingPlan,
   type Stop,
   type TransportMode,
@@ -100,6 +102,18 @@ export function deriveInputsFromPlan(plan: OutingPlan): PlanInputs {
     budget,
     timeOfDay: new Date(),
   };
+}
+
+// Resolves which plan this screen opens with: a specific draft if draftId is
+// given, otherwise whatever's already being worked on (e.g. a FAB-generated
+// plan), otherwise a fresh copy of Scout's Pick.
+function resolveInitialPlan(draftId?: string): OutingPlan {
+  if (draftId) {
+    const draft = getDraftById(draftId);
+    if (draft) return draft;
+    console.warn(`[outing-preview] Draft "${draftId}" not found, falling back to Scout's Pick`);
+  }
+  return getWorkingPlan() ?? getScoutSuggestion();
 }
 
 function tierRange(stops: Stop[]): string {
@@ -537,17 +551,7 @@ export default function OutingPreviewScreen() {
     PlusJakartaSans_600SemiBold,
   });
 
-  const [plan, setPlan]                     = useState<OutingPlan>(() => {
-    if (draftId) {
-      const draft = getDraftById(draftId);
-      if (!draft) {
-        console.warn(`[outing-preview] Draft "${draftId}" not found, falling back to current plan`);
-        return getCurrentPlan();
-      }
-      return draft;
-    }
-    return getCurrentPlan();
-  });
+  const [plan, setPlan]                     = useState<OutingPlan>(() => resolveInitialPlan(draftId));
   const [isEditingName, setIsEditingName]   = useState(false);
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editMode, setEditMode]             = useState(false);
@@ -560,9 +564,7 @@ export default function OutingPreviewScreen() {
   const [showDraftCapModal, setShowDraftCapModal] = useState(false);
   const [addDetailPlace, setAddDetailPlace] = useState<Venue | null>(null);
 
-  const originalPlanRef = useRef<OutingPlan>(
-    draftId ? (getDraftById(draftId) ?? getCurrentPlan()) : getCurrentPlan()
-  );
+  const originalPlanRef = useRef<OutingPlan>(resolveInitialPlan(draftId));
 
   useFocusEffect(
     useCallback(() => {
@@ -584,7 +586,7 @@ export default function OutingPreviewScreen() {
             : stop
         );
         const updated = { ...p, stops: newStops };
-        setCurrentPlan(updated);
+        setWorkingPlan(updated);
         return updated;
       });
       setIsDirty(true);
@@ -605,19 +607,24 @@ export default function OutingPreviewScreen() {
         setIsEditingCaption(false);
       }
     } else {
+      // Leaving without editing further — no unsaved plan should linger for
+      // the next time this screen opens. If draftId was set, the draft
+      // itself is already persisted separately in the drafts array, so this
+      // only clears the scratch workingPlan, not the draft.
+      clearWorkingPlan();
       router.back();
     }
   }
 
   function handleResetToScout() {
     setPlan(originalPlanRef.current);
-    setCurrentPlan(originalPlanRef.current);
+    setWorkingPlan(originalPlanRef.current);
     setIsDirty(false);
   }
 
   function handleSaveDraft() {
     setShowDirtySheet(false);
-    setCurrentPlan(plan);
+    setWorkingPlan(plan);
     const result = saveDraftFromCurrent();
     if (result.capReached) {
       setShowDraftCapModal(true);
@@ -628,7 +635,7 @@ export default function OutingPreviewScreen() {
 
   function handleDiscard() {
     setPlan(originalPlanRef.current);
-    setCurrentPlan(originalPlanRef.current);
+    clearWorkingPlan();
     setIsDirty(false);
     setEditMode(false);
     setIsEditingName(false);
@@ -641,7 +648,7 @@ export default function OutingPreviewScreen() {
     const inputs = deriveInputsFromPlan(plan);
     const nextPlan = generatePlan(inputs);
     setPlan(nextPlan);
-    setCurrentPlan(nextPlan);
+    setWorkingPlan(nextPlan);
     originalPlanRef.current = nextPlan;
     setIsDirty(false);
     setIsRegenerating(false);
@@ -653,7 +660,7 @@ export default function OutingPreviewScreen() {
   function handleRemoveStop(id: string) {
     setPlan((p) => {
       const updated = { ...p, stops: p.stops.filter((stop) => stop.id !== id) };
-      setCurrentPlan(updated);
+      setWorkingPlan(updated);
       return updated;
     });
     setIsDirty(true);
@@ -693,7 +700,7 @@ export default function OutingPreviewScreen() {
         };
       }
       const newPlan = { ...p, stops: [...updated, { ...newStop, connector: undefined }] };
-      setCurrentPlan(newPlan);
+      setWorkingPlan(newPlan);
       return newPlan;
     });
     setIsDirty(true);
@@ -705,7 +712,7 @@ export default function OutingPreviewScreen() {
   }
 
   function handleBegin() {
-    setCurrentPlan(plan);
+    setWorkingPlan(plan);
     beginOuting();
     router.replace('/active-outing');
   }
@@ -745,7 +752,7 @@ export default function OutingPreviewScreen() {
                 onChangeText={(text) => {
                   setPlan((p) => {
                     const updated = { ...p, name: text };
-                    setCurrentPlan(updated);
+                    setWorkingPlan(updated);
                     return updated;
                   });
                   setIsDirty(true);
@@ -777,7 +784,7 @@ export default function OutingPreviewScreen() {
                 onChangeText={(text) => {
                   setPlan((p) => {
                     const updated = { ...p, caption: text };
-                    setCurrentPlan(updated);
+                    setWorkingPlan(updated);
                     return updated;
                   });
                   setIsDirty(true);
