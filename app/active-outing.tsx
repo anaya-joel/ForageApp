@@ -16,7 +16,6 @@ import {
   endOuting,
   getActiveOuting,
   goToPreviousStop,
-  isOutingComplete,
   setScoutSuggestion,
   type OutingPlan,
   type Stop,
@@ -35,6 +34,8 @@ import {
   Navigation,
 } from 'lucide-react-native';
 import { getCatIcon } from './_category-icons';
+import OverallRatingPrompt from './_overall-rating-prompt';
+import StopRatingPrompt from './_stop-rating-prompt';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Pressable,
@@ -224,6 +225,14 @@ export default function ActiveOutingScreen() {
   const [plan, setPlan]               = useState<OutingPlan | null>(() => getActiveOuting());
   const [savedStopIds, setSavedStopIds] = useState<Set<string>>(new Set());
 
+  // Rating overlay state — 'stop' shows after a non-final "Complete Stop",
+  // 'overall' shows after the final stop or an early "End outing". The
+  // finished plan is captured separately because by the time the overall
+  // prompt is showing, endOuting() may have already cleared _activeOuting.
+  const [activePrompt, setActivePrompt]   = useState<'none' | 'stop' | 'overall'>('none');
+  const [ratedStop, setRatedStop]         = useState<Stop | null>(null);
+  const [finishedPlan, setFinishedPlan]   = useState<OutingPlan | null>(null);
+
   useFocusEffect(
     useCallback(() => {
       setPlan(getActiveOuting());
@@ -252,6 +261,19 @@ useEffect(() => {
 }, [currentStop]);
 
 if (!currentStop) return null;
+
+  if (activePrompt === 'overall' && finishedPlan) {
+    return (
+      <OverallRatingPrompt
+        outingId={finishedPlan.id}
+        stops={finishedPlan.stops.map(s => ({ category: s.category }))}
+        onSubmit={rating => {
+          console.log('[active-outing] overall rating submitted', finishedPlan.id, rating);
+          finishOuting();
+        }}
+      />
+    );
+  }
 
   const CatIcon      = getCatIcon(currentStop.category);
   const isStopSaved  = savedStopIds.has(currentStop.id);
@@ -283,21 +305,32 @@ const transportOptions: TransportOpt[] = connector ? [
     setPlan(getActiveOuting());
   }
 
+  // completeCurrentStop() itself is deferred until the rating prompt is
+  // dismissed, so the overlay appears over the just-finished stop's view
+  // and only *then* transitions to the next stop — matching spec Part 9's
+  // "shows prompt, transitions to next stop view" ordering.
   function handleCompleteStop() {
-    completeCurrentStop();
-    if (isOutingComplete()) {
-      regenerateScoutSuggestion(getActiveOuting()!);
-      endOuting();
-      router.replace('/');
+    if (nextStop) {
+      setRatedStop(currentStop!);
+      setActivePrompt('stop');
     } else {
-      setPlan(getActiveOuting());
+      setFinishedPlan(plan);
+      setActivePrompt('overall');
     }
   }
 
-  // No confirmation sheet yet — end outing goes straight home (future prompt).
+  // No confirmation sheet yet — end outing shows the overall rating prompt,
+  // then goes home (future prompt for the confirmation itself).
   function handleEndOuting() {
-    regenerateScoutSuggestion(getActiveOuting()!);
+    setFinishedPlan(getActiveOuting());
+    setActivePrompt('overall');
+  }
+
+  function finishOuting() {
+    if (finishedPlan) regenerateScoutSuggestion(finishedPlan);
     endOuting();
+    setActivePrompt('none');
+    setFinishedPlan(null);
     router.replace('/');
   }
 
@@ -434,6 +467,22 @@ const transportOptions: TransportOpt[] = connector ? [
           </Pressable>
         )}
       </View>
+
+      {activePrompt === 'stop' && ratedStop && (
+        <StopRatingPrompt
+          stopId={ratedStop.stopInstanceId}
+          placeName={ratedStop.name}
+          category={ratedStop.category}
+          onRate={stars => console.log('[active-outing] stop rated', ratedStop.stopInstanceId, stars)}
+          onSave={saved => console.log('[active-outing] stop saved', ratedStop.stopInstanceId, saved)}
+          onDismiss={() => {
+            completeCurrentStop();
+            setPlan(getActiveOuting());
+            setActivePrompt('none');
+            setRatedStop(null);
+          }}
+        />
+      )}
     </View>
   );
 }

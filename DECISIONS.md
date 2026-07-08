@@ -241,11 +241,20 @@ that both outnumber a third). Chosen because the spec's tie-break wording
 case; this is the natural generalization. Revisit only if product wants a
 different tie-break (e.g. category order in the master spec's fixed list).
 
-## [7/7] — app/_dev-rating-test.tsx is a temporary scaffold
+## [7/7] — Rating prompts wired into the real Active Outing flow
 
-app/_dev-rating-test.tsx is a temporary scaffold for testing rating
-components in isolation before Active Outing detail screen exists; delete
-once real wiring is in place.
+app/_stop-rating-prompt.tsx and app/_overall-rating-prompt.tsx are now wired
+into app/active-outing.tsx instead of being reachable only via the deleted
+app/_dev-rating-test.tsx scaffold. Per-stop rating shows on "Complete Stop"
+for a non-final stop; completeCurrentStop() itself is deferred until the
+prompt is dismissed (tap X, Skip, or after rating), so the overlay sits over
+the just-finished stop's view before the screen transitions to the next
+stop, matching spec Part 9/12 ordering. The overall rating prompt shows
+full-screen on "Complete Stop" for the final stop and on "End outing";
+regenerateScoutSuggestion() / endOuting() / router.replace('/') now run only
+after that prompt's onSubmit. No persistence — onRate/onSave/onSubmit
+payloads are console.logged, consistent with these components' existing
+behavior; actual storage remains a known v1 gap.
 
 ## [7/7] — Home Scout suggestion regeneration on outing-end is a proxy, not real personalization
 
