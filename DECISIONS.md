@@ -280,3 +280,15 @@ is a proxy: the next suggestion reflects the categories/vibes/budget of the
 outing the user just did, not any modeled preference. Revisit once a real
 taste-profile/onboarding system exists — at that point this call site
 should switch to that system's input source instead.
+
+## Active Outing — Directions Button Uses Text Search, Not Coordinates
+The "Directions" button on the Active Outing hero card (app/index.tsx,
+`openDirections`) opens the user's default maps app via a name+neighborhood
+text query (e.g. "Compass Coffee, Logan Circle, Washington DC"), not real
+coordinates. Neither `Venue` (data/venues.ts) nor `Stop` (app/_outing-store.ts)
+has lat/lng or a street address field today, so there was nothing more
+precise to build a link from. Per forage_master_spec_v6.md Part 10, "Get
+directions" should link out to the user's default maps app — this satisfies
+that at the text-search level. Revisit and switch to coordinate-based links
+if text-search accuracy becomes a problem (e.g. ambiguous venue names,
+wrong city matches).

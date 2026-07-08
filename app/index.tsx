@@ -47,6 +47,8 @@ import {
 import {
   Animated,
   FlatList,
+  Linking,
+  Platform,
   Pressable,
   ScrollView,
   StatusBar,
@@ -55,6 +57,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Line, Svg } from 'react-native-svg';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -83,11 +86,24 @@ type ActiveOutingCardProps = {
   plan: OutingPlan;
   onNextStop?: () => void;
   onSeeDetails?: () => void;
+  onPreviousStop?: () => void;
 };
 
 function formatStartTime(startTime: number | null): string {
   if (startTime == null) return '—';
   return new Date(startTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
+
+/**
+ * Opens the user's default maps app with a name+neighborhood text search.
+ * Stop/Venue has no lat/lng yet — see DECISIONS.md.
+ */
+function openDirections(stop: { name: string; neighborhood: string }) {
+  const query = encodeURIComponent(`${stop.name}, ${stop.neighborhood}, Washington DC`);
+  const url = Platform.OS === 'ios'
+    ? `https://maps.apple.com/?q=${query}`
+    : `https://www.google.com/maps/search/?api=1&query=${query}`;
+  Linking.openURL(url);
 }
 
 type ProgressStripProps = {
@@ -429,6 +445,19 @@ function OutingDraftCard({ onPress, draft }: PressHandlerProps & { draft: Outing
 //  ACTIVE OUTING CARD  (State C)
 // ─────────────────────────────────────────
 
+function DashedHLine() {
+  const [w, setW] = useState(0);
+  return (
+    <View style={styles.progLine} onLayout={e => setW(e.nativeEvent.layout.width)}>
+      {w > 0 && (
+        <Svg width={w} height={1.5}>
+          <Line x1="0" y1="0.75" x2={w} y2="0.75" stroke={C.textTert} strokeWidth={1.5} strokeDasharray="3 6" />
+        </Svg>
+      )}
+    </View>
+  );
+}
+
 function ProgressStrip({ total, completed }: ProgressStripProps) {
   return (
     <View style={styles.progressStrip}>
@@ -453,15 +482,11 @@ function ProgressStrip({ total, completed }: ProgressStripProps) {
                   {isDone ? '✓' : i + 1}
                 </Text>
               </View>
-              <Text style={[
-                styles.progLabel,
-                (isDone || isCurrent) ? { color: C.amber } : { color: C.textTert },
-              ]}>
-                {i + 1}
-              </Text>
             </View>
             {i < total - 1 && (
-              <View style={[styles.progLine, i < completed ? styles.progLineDone : styles.progLineUpcoming]} />
+              i < completed
+                ? <View style={[styles.progLine, styles.progLineDone]} />
+                : <DashedHLine />
             )}
           </React.Fragment>
         );
@@ -470,7 +495,7 @@ function ProgressStrip({ total, completed }: ProgressStripProps) {
   );
 }
 
-function ActiveOutingCard({ plan, onNextStop, onSeeDetails }: ActiveOutingCardProps) {
+function ActiveOutingCard({ plan, onNextStop, onSeeDetails, onPreviousStop }: ActiveOutingCardProps) {
   const [stopSaved, setStopSaved] = useState(false);
 
   const totalStops     = plan.stops.length;
@@ -499,7 +524,7 @@ function ActiveOutingCard({ plan, onNextStop, onSeeDetails }: ActiveOutingCardPr
 
       {/* Current stop block */}
       <View style={styles.curStopBlock}>
-        <Text style={styles.curStopLabel}>CURRENT STOP {completedStops + 1} OF {totalStops}</Text>
+        <Text style={styles.curStopLabel}>CURRENT STOP</Text>
         <View style={styles.curStopRow}>
           {/* Photo placeholder */}
           <View style={[styles.curPhoto, { backgroundColor: currentStop.color }]} />
@@ -532,11 +557,11 @@ function ActiveOutingCard({ plan, onNextStop, onSeeDetails }: ActiveOutingCardPr
           <View style={styles.nextUpLeft}>
             <View style={[styles.nextUpCircle, { backgroundColor: nextStop.color }]} />
             <View>
-              <Text style={styles.nextUpLabel}>NEXT UP · STOP {completedStops + 2}</Text>
+              <Text style={styles.nextUpLabel}>NEXT UP</Text>
               <Text style={styles.nextUpPlace}>{nextStop.name}</Text>
             </View>
           </View>
-          <Pressable style={styles.directionsBtn} onPress={() => {}}>
+          <Pressable style={styles.directionsBtn} onPress={() => openDirections(nextStop)}>
             <Navigation size={12} color="#FFFFFF" />
             <Text style={styles.directionsBtnText}>Directions</Text>
           </Pressable>
@@ -545,7 +570,7 @@ function ActiveOutingCard({ plan, onNextStop, onSeeDetails }: ActiveOutingCardPr
 
       {/* Previous stop — hidden on stop 1 */}
       {completedStops >= 1 && (
-        <Pressable style={styles.prevStop} onPress={() => {}}>
+        <Pressable style={styles.prevStop} onPress={onPreviousStop}>
           <ArrowLeft size={14} color={C.textTert} />
           <Text style={styles.prevStopText}>Previous stop</Text>
         </Pressable>
@@ -677,8 +702,9 @@ export default function HomeScreen() {
         {derivedState === 'C' && activeOuting && (
           <ActiveOutingCard
             plan={activeOuting}
-            onNextStop={() => {/* navigate to Active Outing Detail */}}
-            onSeeDetails={() => {/* navigate to Active Outing Detail */}}
+            onNextStop={() => router.push('/active-outing')}
+            onSeeDetails={() => router.push('/active-outing')}
+            onPreviousStop={() => router.push('/active-outing')}
           />
         )}
 
@@ -1206,7 +1232,7 @@ const styles = StyleSheet.create({
   progressStrip: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   progNodeWrap: {
     alignItems: 'center',
@@ -1214,9 +1240,9 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   progNode: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1230,27 +1256,20 @@ const styles = StyleSheet.create({
   },
   progNodeUpcoming: {
     backgroundColor: C.bg,
-    borderWidth: 1.5,
-    borderColor: C.border,
+    borderWidth: 2,
+    borderColor: C.textSec,
   },
   progNodeText: {
     fontFamily: F.semi,
-    fontSize: 11,
-  },
-  progLabel: {
-    fontFamily: F.semi,
-    fontSize: 10,
+    fontSize: 12,
   },
   progLine: {
     flex: 1,
     height: 1.5,
-    marginTop: 14, // centers with node (28px / 2 = 14)
+    marginTop: 15,
   },
   progLineDone: {
     backgroundColor: C.amber,
-  },
-  progLineUpcoming: {
-    backgroundColor: C.border,
   },
 
   // Current stop block
@@ -1263,7 +1282,7 @@ const styles = StyleSheet.create({
   curStopLabel: {
     fontFamily: F.semi,
     fontSize: 9,
-    color: C.textTert,
+    color: C.textSec,
     letterSpacing: 0.8,
     marginBottom: 10,
   },
@@ -1349,7 +1368,7 @@ const styles = StyleSheet.create({
   nextUpLabel: {
     fontFamily: F.semi,
     fontSize: 9,
-    color: C.textTert,
+    color: C.textSec,
     letterSpacing: 1,
     marginBottom: 2,
   },
@@ -1383,7 +1402,7 @@ const styles = StyleSheet.create({
   prevStopText: {
     fontFamily: F.reg,
     fontSize: 12,
-    color: C.textSec,
+    color: C.textPrimary,
   },
 
   // Next stop button
@@ -1404,7 +1423,7 @@ const styles = StyleSheet.create({
   seeDetailsText: {
     fontFamily: F.reg,
     fontSize: 12,
-    color: C.textSec,
+    color: C.textPrimary,
     textAlign: 'center',
   },
 
