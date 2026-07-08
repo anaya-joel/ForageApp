@@ -10,18 +10,9 @@ import {
   PlusJakartaSans_600SemiBold,
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { useFonts } from 'expo-font';
-import { useFocusEffect, useRouter } from 'expo-router';
-import {
-  completeCurrentStop,
-  endOuting,
-  getActiveOuting,
-  goToPreviousStop,
-  setScoutSuggestion,
-  type OutingPlan,
-  type Stop,
-} from './_outing-store';
-import { generatePlan } from './_generate-plan';
-import { deriveInputsFromPlan } from './outing-preview';
+import { useRouter } from 'expo-router';
+import { endOuting } from './_outing-store';
+import { regenerateScoutSuggestion, useStopCompletion } from './_use-stop-completion';
 import {
   ArrowLeft,
   Bus,
@@ -36,7 +27,7 @@ import {
 import { getCatIcon } from './_category-icons';
 import OverallRatingPrompt from './_overall-rating-prompt';
 import StopRatingPrompt from './_stop-rating-prompt';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -81,22 +72,6 @@ const F = {
   med:   'PlusJakartaSans_500Medium',
   semi:  'PlusJakartaSans_600SemiBold',
 };
-
-// ─────────────────────────────────────────
-//  HELPERS
-// ─────────────────────────────────────────
-
-// Regenerate the home screen's Scout suggestion so it doesn't just keep
-// showing the outing that was finished/ended. There's no taste-profile
-// store yet, so this derives inputs from the just-completed plan itself
-// (same helper the "Regenerate" button in outing-preview.tsx uses) rather
-// than reusing hardcoded or empty values.
-function regenerateScoutSuggestion(finishedPlan: OutingPlan) {
-  const inputs = deriveInputsFromPlan(finishedPlan);
-  const nextPlan = generatePlan(inputs);
-  setScoutSuggestion(nextPlan);
-}
-
 
 // ─────────────────────────────────────────
 //  TYPES
@@ -222,22 +197,20 @@ export default function ActiveOutingScreen() {
     PlusJakartaSans_600SemiBold,
   });
 
-  const [plan, setPlan]               = useState<OutingPlan | null>(() => getActiveOuting());
+  const {
+    plan,
+    currentStop,
+    nextStop,
+    activePrompt,
+    ratedStop,
+    finishedPlan,
+    handlePreviousStop,
+    handleCompleteStop,
+    handleEndOuting,
+    dismissStopPrompt,
+    finishOuting,
+  } = useStopCompletion('');
   const [savedStopIds, setSavedStopIds] = useState<Set<string>>(new Set());
-
-  // Rating overlay state — 'stop' shows after a non-final "Complete Stop",
-  // 'overall' shows after the final stop or an early "End outing". The
-  // finished plan is captured separately because by the time the overall
-  // prompt is showing, endOuting() may have already cleared _activeOuting.
-  const [activePrompt, setActivePrompt]   = useState<'none' | 'stop' | 'overall'>('none');
-  const [ratedStop, setRatedStop]         = useState<Stop | null>(null);
-  const [finishedPlan, setFinishedPlan]   = useState<OutingPlan | null>(null);
-
-  useFocusEffect(
-    useCallback(() => {
-      setPlan(getActiveOuting());
-    }, [])
-  );
 
   if (!fontsLoaded && !fontError) return null;
 
@@ -247,18 +220,16 @@ useEffect(() => {
   }
 }, [plan]);
 
-if (!plan) return null;
-
-  const currentStop: Stop | undefined = plan.stops[plan.currentStopIndex];
-  const nextStop: Stop | undefined    = plan.stops[plan.currentStopIndex + 1];
-
 useEffect(() => {
+  if (!plan) return;
   if (!currentStop) {
     regenerateScoutSuggestion(plan);
     endOuting();
     router.replace('/');
   }
 }, [currentStop]);
+
+if (!plan) return null;
 
 if (!currentStop) return null;
 
@@ -270,6 +241,7 @@ if (!currentStop) return null;
         onSubmit={rating => {
           console.log('[active-outing] overall rating submitted', finishedPlan.id, rating);
           finishOuting();
+          router.replace('/');
         }}
       />
     );
@@ -298,40 +270,6 @@ const transportOptions: TransportOpt[] = connector ? [
       else next.add(currentStop!.id);
       return next;
     });
-  }
-
-  function handlePreviousStop() {
-    goToPreviousStop();
-    setPlan(getActiveOuting());
-  }
-
-  // completeCurrentStop() itself is deferred until the rating prompt is
-  // dismissed, so the overlay appears over the just-finished stop's view
-  // and only *then* transitions to the next stop — matching spec Part 9's
-  // "shows prompt, transitions to next stop view" ordering.
-  function handleCompleteStop() {
-    if (nextStop) {
-      setRatedStop(currentStop!);
-      setActivePrompt('stop');
-    } else {
-      setFinishedPlan(plan);
-      setActivePrompt('overall');
-    }
-  }
-
-  // No confirmation sheet yet — end outing shows the overall rating prompt,
-  // then goes home (future prompt for the confirmation itself).
-  function handleEndOuting() {
-    setFinishedPlan(getActiveOuting());
-    setActivePrompt('overall');
-  }
-
-  function finishOuting() {
-    if (finishedPlan) regenerateScoutSuggestion(finishedPlan);
-    endOuting();
-    setActivePrompt('none');
-    setFinishedPlan(null);
-    router.replace('/');
   }
 
   return (
@@ -475,12 +413,7 @@ const transportOptions: TransportOpt[] = connector ? [
           category={ratedStop.category}
           onRate={stars => console.log('[active-outing] stop rated', ratedStop.stopInstanceId, stars)}
           onSave={saved => console.log('[active-outing] stop saved', ratedStop.stopInstanceId, saved)}
-          onDismiss={() => {
-            completeCurrentStop();
-            setPlan(getActiveOuting());
-            setActivePrompt('none');
-            setRatedStop(null);
-          }}
+          onDismiss={dismissStopPrompt}
         />
       )}
     </View>
