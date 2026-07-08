@@ -8,7 +8,7 @@
  * persistence. The outing store owns the actual state.
  */
 
-import { Plus, Star } from 'lucide-react-native';
+import { Star } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
   Pressable,
@@ -43,26 +43,29 @@ const F = {
 };
 
 // ─────────────────────────────────────────
-//  WORD SETS
+//  RATING DIMENSIONS
 // ─────────────────────────────────────────
 
-const BASE_WORDS = [
-  'Great vibe',
-  'Well-paced',
-  'Would go again',
-  'Surprising',
-  'Felt long',
-  'Loved it',
+interface Dimension {
+  key: string;
+  label: string;
+  options: string[];
+}
+
+const UNIVERSAL_DIMENSIONS: Dimension[] = [
+  { key: 'pacing',  label: 'Pacing',       options: ['Well-paced', 'Moderate', 'Rushed'] },
+  { key: 'feel',    label: 'Overall feel', options: ['Loved it', 'It was fine', 'Not for me'] },
+  { key: 'repeat',  label: 'Would repeat', options: ['Would go again', 'Maybe', "Wouldn't repeat"] },
 ];
 
-const CATEGORY_WORDS: Record<string, string[]> = {
-  'NIGHTLIFE':       ['Great energy', 'Lively crowd', 'Quiet for a bar'],
-  'OUTDOORS':        ['Surprisingly calm', 'Scenic', 'Underrated'],
-  'ARTS & CULTURE':  ['Thought-provoking', 'Hidden gem', 'Crowded'],
-  'EAT & DRINK':     ['Excellent food', 'Worth the price', 'Overrated'],
-  'COFFEE & CAFÉS':  ['Perfect for work', 'Great atmosphere', 'Too crowded'],
-  'EXPERIENCES':     ['Unique', 'Totally worth it', 'Overrated'],
-  'MARKETS':         ['Great finds', 'Loved browsing', 'Not much there'],
+const CATEGORY_DIMENSIONS: Record<string, Dimension> = {
+  'NIGHTLIFE':       { key: 'energy',    label: 'Energy',    options: ['Lively', 'Chill', 'Dead'] },
+  'OUTDOORS':        { key: 'setting',   label: 'Setting',   options: ['Peaceful', 'Busy', 'Crowded'] },
+  'ARTS & CULTURE':  { key: 'depth',     label: 'Depth',     options: ['Thought-provoking', 'Enjoyable', 'Skimmed it'] },
+  'EAT & DRINK':     { key: 'value',     label: 'Value',     options: ['Worth it', 'Fair', 'Pricier than expected'] },
+  'COFFEE & CAFÉS':  { key: 'atmosphere', label: 'Atmosphere', options: ['Great', 'Fine', 'Too crowded'] },
+  'EXPERIENCES':     { key: 'impact',    label: 'Impact',    options: ['Totally worth it', 'Good once', 'One and done'] },
+  'MARKETS':         { key: 'selection', label: 'Selection', options: ['Great finds', 'Average', 'Slim pickings'] },
 };
 
 // Dominant category = the most frequent category among the outing's stops;
@@ -91,7 +94,7 @@ function getDominantCategory(stops: { category: string }[]): string {
 export interface OverallRatingPromptProps {
   outingId: string;
   stops: { category: string }[];
-  onSubmit: (rating: { stars: number; words: string[]; note?: string }) => void;
+  onSubmit: (rating: { stars: number; dimensions: Record<string, string>; note?: string }) => void;
 }
 
 // ─────────────────────────────────────────
@@ -105,40 +108,28 @@ export default function OverallRatingPrompt({
   const insets = useSafeAreaInsets();
 
   const dominantCategory = getDominantCategory(stops);
-  const categoryWords    = CATEGORY_WORDS[dominantCategory] ?? [];
+  const categoryDimension = CATEGORY_DIMENSIONS[dominantCategory];
+  const dimensions = categoryDimension
+    ? [...UNIVERSAL_DIMENSIONS, categoryDimension]
+    : UNIVERSAL_DIMENSIONS;
 
-  const [stars, setStars]             = useState(0);
-  const [customWords, setCustomWords] = useState<string[]>([]);
-  const [selectedWords, setSelectedWords] = useState<Set<string>>(new Set());
-  const [customInput, setCustomInput] = useState('');
-  const [note, setNote]               = useState('');
+  const [stars, setStars] = useState(0);
+  const [selections, setSelections] = useState<Record<string, string>>({});
+  const [note, setNote] = useState('');
 
-  const allWords = [...BASE_WORDS, ...categoryWords, ...customWords];
-
-  function handleToggleWord(word: string) {
-    setSelectedWords(prev => {
-      const next = new Set(prev);
-      if (next.has(word)) next.delete(word);
-      else next.add(word);
+  function handleSelectOption(dimensionKey: string, option: string) {
+    setSelections(prev => {
+      const next = { ...prev };
+      if (next[dimensionKey] === option) delete next[dimensionKey];
+      else next[dimensionKey] = option;
       return next;
     });
-  }
-
-  function handleAddCustomWord() {
-    const word = customInput.trim();
-    if (!word || allWords.includes(word)) {
-      setCustomInput('');
-      return;
-    }
-    setCustomWords(prev => [...prev, word]);
-    setSelectedWords(prev => new Set(prev).add(word));
-    setCustomInput('');
   }
 
   function handleSubmit() {
     onSubmit({
       stars,
-      words: Array.from(selectedWords),
+      dimensions: selections,
       note: note.trim() || undefined,
     });
   }
@@ -167,46 +158,36 @@ export default function OverallRatingPrompt({
             >
               <Star
                 size={34}
-                color={n <= stars ? C.amber : C.border}
-                fill={n <= stars ? C.amber : C.border}
+                color={n <= stars ? C.amber : C.textTert}
+                fill={n <= stars ? C.amber : C.textTert}
               />
             </Pressable>
           ))}
         </View>
 
-        {/* Descriptive words */}
-        <Text style={styles.sectionLabel}>WHAT STOOD OUT?</Text>
-        <View style={styles.pillWrap}>
-          {allWords.map(word => {
-            const isSelected = selectedWords.has(word);
-            return (
-              <Pressable
-                key={word}
-                style={[styles.pill, isSelected && styles.pillSelected]}
-                onPress={() => handleToggleWord(word)}
-              >
-                <Text style={[styles.pillText, isSelected && styles.pillTextSelected]}>
-                  {word}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* Add a custom word */}
-        <View style={styles.customRow}>
-          <TextInput
-            style={styles.customInput}
-            placeholder="Add your own word"
-            placeholderTextColor={C.textTert}
-            value={customInput}
-            onChangeText={setCustomInput}
-            onSubmitEditing={handleAddCustomWord}
-            returnKeyType="done"
-          />
-          <Pressable style={styles.customAddBtn} onPress={handleAddCustomWord}>
-            <Plus size={16} color="#FFFFFF" />
-          </Pressable>
+        {/* Spectrum dimensions */}
+        <View style={styles.dimensionsWrap}>
+          {dimensions.map(dimension => (
+            <View key={dimension.key} style={styles.dimensionRow}>
+              <Text style={styles.dimensionLabel}>{dimension.label}</Text>
+              <View style={styles.optionRow}>
+                {dimension.options.map(option => {
+                  const isSelected = selections[dimension.key] === option;
+                  return (
+                    <Pressable
+                      key={option}
+                      style={[styles.option, isSelected && styles.optionSelected]}
+                      onPress={() => handleSelectOption(dimension.key, option)}
+                    >
+                      <Text style={[styles.optionText, isSelected && styles.optionTextSelected]} numberOfLines={1}>
+                        {option}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          ))}
         </View>
 
         {/* Free-text note */}
@@ -272,64 +253,49 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontFamily: F.semi,
     fontSize: 10,
-    color: C.textTert,
+    color: C.textPrimary,
     letterSpacing: 1,
     marginBottom: 10,
   },
 
-  pillWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 14,
+  dimensionsWrap: {
+    marginBottom: 22,
   },
-  pill: {
+  dimensionRow: {
+    marginBottom: 16,
+  },
+  dimensionLabel: {
+    fontFamily: F.med,
+    fontSize: 13,
+    color: C.textPrimary,
+    marginBottom: 8,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  option: {
+    flex: 1,
     backgroundColor: C.card,
     borderWidth: 1,
     borderColor: C.border,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
   },
-  pillSelected: {
+  optionSelected: {
     backgroundColor: C.amber,
     borderColor: C.amber,
   },
-  pillText: {
+  optionText: {
     fontFamily: F.med,
-    fontSize: 13,
+    fontSize: 12,
     color: C.textSec,
+    textAlign: 'center',
   },
-  pillTextSelected: {
+  optionTextSelected: {
     color: '#FFFFFF',
-  },
-
-  customRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 28,
-  },
-  customInput: {
-    flex: 1,
-    height: 44,
-    borderWidth: 1,
-    borderColor: C.border,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    backgroundColor: C.card,
-    fontFamily: F.reg,
-    fontSize: 13,
-    color: C.textPrimary,
-  },
-  customAddBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: C.amber,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
   },
 
   noteInput: {
