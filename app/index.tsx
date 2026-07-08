@@ -33,12 +33,14 @@ import {
   Users,
 } from 'lucide-react-native';
 import { getCatIcon } from './_category-icons';
+import OverallRatingPrompt from './_overall-rating-prompt';
+import StopRatingSheet from './_stop-rating-sheet';
+import { useStopCompletion } from './_use-stop-completion';
 import { C } from '../data/colors';
 import { VENUES, type Venue } from '../data/venues';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  getActiveOuting,
   getScoutSuggestion,
   getDrafts,
   getMostRecentDraft,
@@ -87,6 +89,7 @@ type ActiveOutingCardProps = {
   onNextStop?: () => void;
   onSeeDetails?: () => void;
   onPreviousStop?: () => void;
+  isFinalStop?: boolean;
 };
 
 function formatStartTime(startTime: number | null): string {
@@ -495,7 +498,7 @@ function ProgressStrip({ total, completed }: ProgressStripProps) {
   );
 }
 
-function ActiveOutingCard({ plan, onNextStop, onSeeDetails, onPreviousStop }: ActiveOutingCardProps) {
+function ActiveOutingCard({ plan, onNextStop, onSeeDetails, onPreviousStop, isFinalStop }: ActiveOutingCardProps) {
   const [stopSaved, setStopSaved] = useState(false);
 
   const totalStops     = plan.stops.length;
@@ -578,7 +581,7 @@ function ActiveOutingCard({ plan, onNextStop, onSeeDetails, onPreviousStop }: Ac
 
       {/* Next Stop button */}
       <Pressable style={styles.nextStopBtn} onPress={onNextStop}>
-        <Text style={styles.nextStopBtnText}>Next Stop  →</Text>
+        <Text style={styles.nextStopBtnText}>{isFinalStop ? 'Finish Outing  →' : 'Next Stop  →'}</Text>
       </Pressable>
 
       {/* See full outing details */}
@@ -675,12 +678,30 @@ export default function HomeScreen() {
     }
   }, [fontsLoaded, fontError]);
 
+  const stopCompletion = useStopCompletion('');
+
   if (!fontsLoaded && !fontError) return null;
 
+  if (stopCompletion.activePrompt === 'overall' && stopCompletion.finishedPlan) {
+    return (
+      <OverallRatingPrompt
+        outingId={stopCompletion.finishedPlan.id}
+        stops={stopCompletion.finishedPlan.stops}
+        onSubmit={rating => {
+          stopCompletion.finishOuting();
+        }}
+      />
+    );
+  }
+
   // 'C' = active outing · 'B' = draft in progress · 'A' = no outing
-  const activeOuting  = getActiveOuting();
+  const activeOuting  = stopCompletion.plan;
   const drafts        = getDrafts();
   const derivedState  = activeOuting !== null ? 'C' : drafts.length > 0 ? 'B' : 'A';
+
+  function onNextStop() {
+    stopCompletion.handleCompleteStop();
+  }
 
   return (
     <View style={styles.screen}>
@@ -700,12 +721,22 @@ export default function HomeScreen() {
 
         {/* ── STATE C: Active outing hero ── */}
         {derivedState === 'C' && activeOuting && (
-          <ActiveOutingCard
-            plan={activeOuting}
-            onNextStop={() => router.push('/active-outing')}
-            onSeeDetails={() => router.push('/active-outing')}
-            onPreviousStop={() => router.push('/active-outing')}
-          />
+          <>
+            <ActiveOutingCard
+              plan={activeOuting}
+              onNextStop={onNextStop}
+              onSeeDetails={() => router.push('/active-outing')}
+              onPreviousStop={stopCompletion.handlePreviousStop}
+              isFinalStop={stopCompletion.isFinalStop}
+            />
+            <StopRatingSheet
+              stop={stopCompletion.ratedStop ?? activeOuting.stops[activeOuting.currentStopIndex]}
+              visible={stopCompletion.activePrompt === 'stop'}
+              onRate={stars => console.log('[home] stop rated', stopCompletion.ratedStop?.stopInstanceId, stars)}
+              onSave={saved => console.log('[home] stop saved', stopCompletion.ratedStop?.stopInstanceId, saved)}
+              onDismiss={stopCompletion.dismissStopPrompt}
+            />
+          </>
         )}
 
         {/* ── STATE A: Scout suggestion ── */}
