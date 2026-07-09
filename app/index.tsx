@@ -33,6 +33,7 @@ import {
   Users,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import ActiveOutingWarningSheet from './_active-outing-warning-sheet';
 import { getCatIcon } from './_category-icons';
 import OverallRatingPrompt from './_overall-rating-prompt';
 import StopRatingSheet from './_stop-rating-sheet';
@@ -688,6 +689,9 @@ export default function HomeScreen() {
 
   const stopCompletion = useStopCompletion('');
 
+  const [showFabWarning, setShowFabWarning]         = useState(false);
+  const [pendingFabRedirect, setPendingFabRedirect]  = useState(false);
+
   if (!fontsLoaded && !fontError) return null;
 
   if (stopCompletion.activePrompt === 'overall' && stopCompletion.finishedPlan) {
@@ -697,6 +701,10 @@ export default function HomeScreen() {
         stops={stopCompletion.finishedPlan.stops}
         onSubmit={rating => {
           stopCompletion.finishOuting();
+          if (pendingFabRedirect) {
+            setPendingFabRedirect(false);
+            router.push('/outing-questions');
+          }
         }}
       />
     );
@@ -744,6 +752,18 @@ export default function HomeScreen() {
               onSave={saved => console.log('[home] stop saved', stopCompletion.ratedStop?.stopInstanceId, saved)}
               onDismiss={stopCompletion.dismissStopPrompt}
             />
+            <ActiveOutingWarningSheet
+              planName={stopCompletion.plan?.name ?? ''}
+              stopsCompleted={stopCompletion.plan?.currentStopIndex ?? 0}
+              totalStops={stopCompletion.plan?.stops.length ?? 0}
+              visible={showFabWarning}
+              onKeepGoing={() => setShowFabWarning(false)}
+              onEndAndStartNew={() => {
+                setShowFabWarning(false);
+                setPendingFabRedirect(true);
+                stopCompletion.handleEndOuting();
+              }}
+            />
           </>
         )}
 
@@ -774,7 +794,16 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Bottom nav */}
-      <BottomNav activeTab="Home" onFabPress={() => router.push('/outing-questions')} />
+      <BottomNav
+        activeTab="Home"
+        onFabPress={() => {
+          if (stopCompletion.plan) {
+            setShowFabWarning(true);
+          } else {
+            router.push('/outing-questions');
+          }
+        }}
+      />
     </View>
   );
 }
