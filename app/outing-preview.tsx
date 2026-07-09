@@ -42,7 +42,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   beginOuting,
   createStopInstanceId,
+  deleteDraft,
   getDraftById,
+  getDrafts,
   getScoutSuggestion,
   getWorkingPlan,
   saveDraftFromCurrent,
@@ -117,6 +119,15 @@ function resolveInitialPlan(draftId?: string): OutingPlan {
   return getWorkingPlan() ?? getScoutSuggestion();
 }
 
+// Oldest by lastEdited — used both to preview and to actually delete the
+// draft the cap-reached modal's "Delete oldest draft" action targets.
+function getOldestDraft(): OutingPlan | null {
+  return getDrafts().reduce<OutingPlan | null>((acc, d) => {
+    if (!acc) return d;
+    return (d.lastEdited ?? 0) < (acc.lastEdited ?? 0) ? d : acc;
+  }, null);
+}
+
 function tierRange(stops: Stop[]): string {
   const paid = stops.map((s) => s.priceTier).filter((t) => t !== 'Free');
   if (paid.length === 0) return 'Free';
@@ -179,11 +190,15 @@ function DirtyBackSheet({
 
 function DraftCapModal({
   visible,
+  oldestDraftName,
   onViewDrafts,
+  onDeleteOldest,
   onDismiss,
 }: {
   visible: boolean;
+  oldestDraftName: string;
   onViewDrafts: () => void;
+  onDeleteOldest: () => void;
   onDismiss: () => void;
 }) {
   const insets = useSafeAreaInsets();
@@ -206,8 +221,18 @@ function DraftCapModal({
           </Pressable>
           <View style={styles.sheetOptionDivider} />
 
+          <Pressable style={styles.sheetOption} onPress={onDeleteOldest}>
+            <Text
+              style={[styles.sheetOptionText, styles.sheetOptionDestructive]}
+              numberOfLines={1}
+            >
+              {oldestDraftName ? `Delete oldest draft — ${oldestDraftName}` : 'Delete oldest draft'}
+            </Text>
+          </Pressable>
+          <View style={styles.sheetOptionDivider} />
+
           <Pressable style={styles.sheetOption} onPress={onDismiss}>
-            <Text style={styles.sheetOptionText}>OK</Text>
+            <Text style={styles.sheetOptionText}>Go back</Text>
           </Pressable>
         </Pressable>
       </Pressable>
@@ -640,6 +665,20 @@ export default function OutingPreviewScreen() {
     }
   }
 
+  function handleDeleteOldestDraft() {
+    const oldest = getOldestDraft();
+    if (!oldest) return;
+
+    deleteDraft(oldest.id);
+    const result = saveDraftFromCurrent();
+    if (result.success) {
+      setShowDraftCapModal(false);
+      router.back();
+    } else {
+      console.warn('[outing-preview] retry save after deleting oldest draft still failed', result);
+    }
+  }
+
   function handleDiscard() {
     setPlan(originalPlanRef.current);
     clearWorkingPlan();
@@ -905,7 +944,9 @@ export default function OutingPreviewScreen() {
       {/* ── DRAFT CAP MODAL ── */}
       <DraftCapModal
         visible={showDraftCapModal}
-        onViewDrafts={() => { setShowDraftCapModal(false); router.back(); }}
+        oldestDraftName={getOldestDraft()?.name ?? ''}
+        onViewDrafts={() => { setShowDraftCapModal(false); router.push('/drafts'); }}
+        onDeleteOldest={handleDeleteOldestDraft}
         onDismiss={() => setShowDraftCapModal(false)}
       />
 
