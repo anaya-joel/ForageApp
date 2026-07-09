@@ -25,6 +25,7 @@ import {
   Navigation,
 } from 'lucide-react-native';
 import { getCatIcon } from './_category-icons';
+import EndOutingConfirmSheet from './_end-outing-confirm-sheet';
 import OverallRatingPrompt from './_overall-rating-prompt';
 import StopRatingPrompt from './_stop-rating-prompt';
 import React, { useEffect, useState } from 'react';
@@ -211,6 +212,7 @@ export default function ActiveOutingScreen() {
     finishOuting,
   } = useStopCompletion('');
   const [savedStopIds, setSavedStopIds] = useState<Set<string>>(new Set());
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
 
   if (!fontsLoaded && !fontError) return null;
 
@@ -400,7 +402,7 @@ const transportOptions: TransportOpt[] = connector ? [
           </Text>
         </Pressable>
         {plan.currentStopIndex !== plan.stops.length - 1 && (
-          <Pressable style={styles.endOutingBtn} onPress={handleEndOuting}>
+          <Pressable style={styles.endOutingBtn} onPress={() => setShowEndConfirm(true)}>
             <Text style={styles.endOutingText}>End outing</Text>
           </Pressable>
         )}
@@ -416,6 +418,16 @@ const transportOptions: TransportOpt[] = connector ? [
           onDismiss={dismissStopPrompt}
         />
       )}
+
+      <EndOutingConfirmSheet
+        planName={plan?.name ?? ''}
+        visible={showEndConfirm}
+        onKeepGoing={() => setShowEndConfirm(false)}
+        onEndOuting={() => {
+          setShowEndConfirm(false);
+          handleEndOuting();
+        }}
+      />
     </View>
   );
 }
