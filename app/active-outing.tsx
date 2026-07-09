@@ -396,7 +396,7 @@ const transportOptions: TransportOpt[] = connector ? [
       <View style={[styles.bottomCTA, { paddingBottom: insets.bottom + 16 }]}>
         <Pressable style={styles.completeBtn} onPress={handleCompleteStop}>
           <Text style={styles.completeBtnText}>
-            {plan.currentStopIndex === plan.stops.length - 1 ? 'Finish Outing' : 'Complete Stop  →'}
+            {plan.currentStopIndex === plan.stops.length - 1 ? 'Finish Outing' : 'Next Stop  →'}
           </Text>
         </Pressable>
         {plan.currentStopIndex !== plan.stops.length - 1 && (

@@ -76,17 +76,9 @@ export default function StopRatingPrompt({
     onDismiss();
   }
 
-  function handleSkip() {
-    if (rating !== 0) onRate(0);
-    if (saved) onSave(false);
-    setRating(0);
-    setSaved(false);
-    onDismiss();
-  }
-
   return (
     <View style={styles.root} pointerEvents="box-none">
-      <Pressable style={styles.backdrop} onPress={onDismiss} />
+      <View style={styles.backdrop} />
 
       <View style={styles.sheet}>
         <Pressable
@@ -124,15 +116,7 @@ export default function StopRatingPrompt({
         </View>
 
         <Pressable style={styles.confirmBtn} onPress={handleConfirm}>
-          <Text style={styles.confirmText}>Next stop →</Text>
-        </Pressable>
-
-        <Pressable
-          style={styles.skipBtn}
-          onPress={handleSkip}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Text style={styles.skipText}>Skip</Text>
+          <Text style={styles.confirmText}>Done</Text>
         </Pressable>
       </View>
     </View>
@@ -231,20 +215,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
-    marginBottom: 10,
   },
   confirmText: {
     fontFamily: F.semi,
     fontSize: 14,
     color: '#FFFFFF',
-  },
-  skipBtn: {
-    alignSelf: 'center',
-    paddingVertical: 4,
-  },
-  skipText: {
-    fontFamily: F.reg,
-    fontSize: 12,
-    color: C.textSec,
   },
 });

@@ -131,9 +131,7 @@ export default function StopRatingSheet({
   return (
     <Modal visible={rendered} transparent animationType="none" onRequestClose={onDismiss}>
       <View style={styles.root}>
-        <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
-        </Animated.View>
+        <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
 
         <Animated.View
           style={[

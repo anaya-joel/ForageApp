@@ -32,6 +32,7 @@ import {
   User,
   Users,
 } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { getCatIcon } from './_category-icons';
 import OverallRatingPrompt from './_overall-rating-prompt';
 import StopRatingSheet from './_stop-rating-sheet';
@@ -559,9 +560,9 @@ function ActiveOutingCard({ plan, onNextStop, onSeeDetails, onPreviousStop, isFi
         <View style={styles.nextUpRow}>
           <View style={styles.nextUpLeft}>
             <View style={[styles.nextUpCircle, { backgroundColor: nextStop.color }]} />
-            <View>
+            <View style={styles.nextUpText}>
               <Text style={styles.nextUpLabel}>NEXT UP</Text>
-              <Text style={styles.nextUpPlace}>{nextStop.name}</Text>
+              <Text style={styles.nextUpPlace} numberOfLines={1}>{nextStop.name}</Text>
             </View>
           </View>
           <Pressable style={styles.directionsBtn} onPress={() => openDirections(nextStop)}>
@@ -581,7 +582,7 @@ function ActiveOutingCard({ plan, onNextStop, onSeeDetails, onPreviousStop, isFi
 
       {/* Next Stop button */}
       <Pressable style={styles.nextStopBtn} onPress={onNextStop}>
-        <Text style={styles.nextStopBtnText}>{isFinalStop ? 'Finish Outing  →' : 'Next Stop  →'}</Text>
+        <Text style={styles.nextStopBtnText}>{isFinalStop ? 'Finish Outing' : 'Next Stop  →'}</Text>
       </Pressable>
 
       {/* See full outing details */}
@@ -613,7 +614,14 @@ function BottomNav({ activeTab = 'Home', onFabPress }: { activeTab?: string; onF
           return (
             <View key="fab" style={styles.fabWrap}>
               <Pressable style={styles.fab} onPress={onFabPress}>
-                <Sparkles size={24} color="#FFFFFF" />
+                <LinearGradient
+                  colors={[C.fabTop, C.fabBottom]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={styles.fabGradient}
+                >
+                  <Sparkles size={24} color="#FFFFFF" />
+                </LinearGradient>
               </Pressable>
             </View>
           );
@@ -1390,11 +1398,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    flex: 1,
+    minWidth: 0,
   },
   nextUpCircle: {
     width: 26,
     height: 26,
     borderRadius: 13,
+    flexShrink: 0,
+  },
+  nextUpText: {
+    flex: 1,
+    minWidth: 0,
   },
   nextUpLabel: {
     fontFamily: F.semi,
@@ -1416,6 +1431,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 5,
+    flexShrink: 0,
   },
   directionsBtnText: {
     fontFamily: F.semi,
@@ -1440,11 +1456,10 @@ const styles = StyleSheet.create({
   nextStopBtn: {
     height: 46,
     borderRadius: 12,
-    backgroundColor: C.amber, // replace with LinearGradient for the full gradient
+    backgroundColor: C.fabTop,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
-    // For gradient: wrap in expo-linear-gradient <LinearGradient colors={[C.fabTop, C.fabBottom]} start={{x:0,y:0}} end={{x:1,y:1}}>
   },
   nextStopBtnText: {
     fontFamily: F.semi,
@@ -1497,7 +1512,6 @@ const styles = StyleSheet.create({
     width: 62,
     height: 62,
     borderRadius: 31,
-    backgroundColor: C.amber, // replace with LinearGradient
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: 'rgba(180,95,20,1)',
@@ -1505,5 +1519,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.48,
     shadowRadius: 18,
     elevation: 8,
+  },
+  fabGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 31,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

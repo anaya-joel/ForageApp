@@ -39,10 +39,12 @@ type ActivePrompt = 'none' | 'stop' | 'overall';
 export function useStopCompletion(outingId: string) {
   const [plan, setPlan] = useState<OutingPlan | null>(() => getActiveOuting());
 
-  // Rating overlay state — 'stop' shows after a non-final "Complete Stop",
-  // 'overall' shows after the final stop or an early "End outing". The
-  // finished plan is captured separately because by the time the overall
-  // prompt is showing, endOuting() may have already cleared _activeOuting.
+  // Rating overlay state — 'stop' shows after every "Complete Stop" press,
+  // including the final one; 'overall' shows once that stop's rating is
+  // dismissed (if it was the final stop) or after an early "End outing".
+  // The finished plan is captured separately because by the time the
+  // overall prompt is showing, endOuting() may have already cleared
+  // _activeOuting.
   const [activePrompt, setActivePrompt] = useState<ActivePrompt>('none');
   const [ratedStop, setRatedStop]       = useState<Stop | null>(null);
   const [finishedPlan, setFinishedPlan] = useState<OutingPlan | null>(null);
@@ -68,17 +70,13 @@ export function useStopCompletion(outingId: string) {
 
   // completeCurrentStop() itself is deferred until the rating prompt is
   // dismissed, so the overlay appears over the just-finished stop's view
-  // and only *then* transitions to the next stop — matching spec Part 9's
-  // "shows prompt, transitions to next stop view" ordering.
+  // and only *then* transitions to the next stop (or, on the final stop,
+  // into the overall rating prompt) — matching spec Part 9's "shows
+  // prompt, transitions to next stop view" ordering.
   function handleCompleteStop() {
     if (!plan || !currentStop) return;
-    if (nextStop) {
-      setRatedStop(currentStop);
-      setActivePrompt('stop');
-    } else {
-      setFinishedPlan(plan);
-      setActivePrompt('overall');
-    }
+    setRatedStop(currentStop);
+    setActivePrompt('stop');
   }
 
   // No confirmation sheet yet — end outing shows the overall rating prompt,
@@ -89,6 +87,12 @@ export function useStopCompletion(outingId: string) {
   }
 
   function dismissStopPrompt() {
+    if (isFinalStop) {
+      setFinishedPlan(plan);
+      setActivePrompt('overall');
+      setRatedStop(null);
+      return;
+    }
     completeCurrentStop();
     refreshPlan();
     setActivePrompt('none');
