@@ -391,7 +391,7 @@ function BuildAroundCard() {
 //  OUTING DRAFT CARD  (State B)
 // ─────────────────────────────────────────
 
-function OutingDraftCard({ onPress, draft }: PressHandlerProps & { draft: OutingPlan }) {
+function OutingDraftCard({ onPress, onViewList, draft }: PressHandlerProps & { onViewList?: () => void; draft: OutingPlan }) {
   const name       = draft.name;
   const stopCount  = draft.stops.length;
   const stopColors = draft.stops.map(s => s.color).slice(0, 3);
@@ -434,7 +434,7 @@ function OutingDraftCard({ onPress, draft }: PressHandlerProps & { draft: Outing
 
       {/* View draft list — outside card, below it */}
       {(getDrafts().length - 1) >= 1 && (
-        <Pressable style={styles.draftListLink} onPress={() => {}}>
+        <Pressable style={styles.draftListLink} onPress={onViewList}>
           <Text style={styles.draftListText}>View draft list</Text>
           <ChevronRight size={12} color={C.textSec} />
         </Pressable>
@@ -599,7 +599,7 @@ function ActiveOutingCard({ plan, onNextStop, onSeeDetails, onPreviousStop, isFi
 //  Expo Router tabs or React Navigation)
 // ─────────────────────────────────────────
 
-function BottomNav({ activeTab = 'Home', onFabPress }: { activeTab?: string; onFabPress?: () => void }) {
+function BottomNav({ activeTab = 'Home', onFabPress, onProfilePress }: { activeTab?: string; onFabPress?: () => void; onProfilePress?: () => void }) {
   const insets = useSafeAreaInsets();
   const tabs = [
     { name: 'Home',    Icon: Home },
@@ -634,7 +634,11 @@ function BottomNav({ activeTab = 'Home', onFabPress }: { activeTab?: string; onF
         if(!Icon) return null;
 
         return (
-          <Pressable key={tab.name} style={styles.navTab}>
+          <Pressable
+            key={tab.name}
+            style={styles.navTab}
+            onPress={tab.name === 'Profile' ? onProfilePress : undefined}
+          >
             <Icon size={22} color={iconColor} />
             <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
               {tab.name}
@@ -778,6 +782,7 @@ export default function HomeScreen() {
             {getMostRecentDraft() != null && (
               <OutingDraftCard
                 onPress={() => router.push({ pathname: '/outing-preview', params: { draftId: getMostRecentDraft()!.id } })}
+                onViewList={() => router.push('/drafts')}
                 draft={getMostRecentDraft()!}
               />
             )}
@@ -803,6 +808,7 @@ export default function HomeScreen() {
             router.push('/outing-questions');
           }
         }}
+        onProfilePress={() => router.push('/drafts')}
       />
     </View>
   );

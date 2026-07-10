@@ -945,7 +945,7 @@ export default function OutingPreviewScreen() {
       <DraftCapModal
         visible={showDraftCapModal}
         oldestDraftName={getOldestDraft()?.name ?? ''}
-        onViewDrafts={() => { setShowDraftCapModal(false); router.push('/drafts'); }}
+        onViewDrafts={() => { setShowDraftCapModal(false); router.push({ pathname: '/drafts', params: { pendingSave: 'true' } }); }}
         onDeleteOldest={handleDeleteOldestDraft}
         onDismiss={() => setShowDraftCapModal(false)}
       />
