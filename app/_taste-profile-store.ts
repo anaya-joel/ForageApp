@@ -15,7 +15,7 @@ export type QuizAnswers = {
 };
 
 export type TasteProfileResult = {
-  categories: [Category, Category]; // top 2, tie-broken
+  categories: [Category, Category, Category]; // top 3, tie-broken
   vibes: string[]; // top 3, tie-broken, most-frequent-first
 };
 
@@ -106,7 +106,11 @@ export function scoreTasteProfile(answers: QuizAnswers): TasteProfileResult {
     if (countB !== countA) return countB - countA;
     return CATEGORY_TIEBREAK.indexOf(catA) - CATEGORY_TIEBREAK.indexOf(catB);
   });
-  const categories: [Category, Category] = [sortedCategories[0][0], sortedCategories[1][0]];
+  const categories: [Category, Category, Category] = [
+    sortedCategories[0][0],
+    sortedCategories[1][0],
+    sortedCategories[2][0],
+  ];
 
   const sortedVibes = [...vibeTally.entries()].sort(([vibeA, countA], [vibeB, countB]) => {
     if (countB !== countA) return countB - countA;
