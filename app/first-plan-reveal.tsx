@@ -1,5 +1,7 @@
 import { Redirect, Stack, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { generatePlan, type PlanInputs } from './_generate-plan';
+import { setScoutSuggestion } from './_outing-store';
 import { getQuizAnswers } from './_quiz-progress-store';
 import {
   scoreTasteProfile,
@@ -42,6 +44,16 @@ export default function FirstPlanRevealScreen() {
         onPress={() => {
           setTasteProfile(result);
           setTasteProfileComplete(true);
+
+          const inputs: PlanInputs = {
+            categories: result.categories,
+            vibes: result.vibes,
+            budget: '$$',
+            timeOfDay: new Date(),
+          };
+          const plan = generatePlan(inputs);
+          setScoutSuggestion(plan);
+
           router.replace('/');
         }}
       >
