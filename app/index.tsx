@@ -40,7 +40,7 @@ import StopRatingSheet from './_stop-rating-sheet';
 import { useStopCompletion } from './_use-stop-completion';
 import { C } from '../data/colors';
 import { VENUES, type Venue } from '../data/venues';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   getScoutSuggestion,
@@ -48,6 +48,7 @@ import {
   getMostRecentDraft,
   type OutingPlan,
 } from './_outing-store';
+import { getTasteProfileComplete } from './_taste-profile-store';
 import {
   Animated,
   FlatList,
@@ -667,6 +668,10 @@ function getGreeting(name: string) {
 // ─────────────────────────────────────────
 
 export default function HomeScreen() {
+  if (!getTasteProfileComplete()) {
+    return <Redirect href="/welcome" />;
+  }
+
   const [, setRefreshTick] = useState(0);
 
   useFocusEffect(
