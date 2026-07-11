@@ -49,6 +49,7 @@ import {
   type OutingPlan,
 } from './_outing-store';
 import { getTasteProfileComplete } from './_taste-profile-store';
+import { getUserName } from './_user-profile-store';
 import {
   Animated,
   FlatList,
@@ -656,11 +657,13 @@ function BottomNav({ activeTab = 'Home', onFabPress, onProfilePress }: { activeT
 // ─────────────────────────────────────────
 
 function getGreeting(name: string) {
+  const trimmedName = name.trim();
+  const namePart = trimmedName ? `, ${trimmedName}` : '';
   const h = new Date().getHours();
-  if (h >= 5  && h < 12) return `Good morning, ${name}.`;
-  if (h >= 12 && h < 18) return `Good afternoon, ${name}.`;
-  if (h >= 18 && h < 24) return `Good evening, ${name}.`;
-  return `Hey, ${name}.`;
+  if (h >= 5  && h < 12) return `Good morning${namePart}.`;
+  if (h >= 12 && h < 18) return `Good afternoon${namePart}.`;
+  if (h >= 18 && h < 24) return `Good evening${namePart}.`;
+  return `Hey${namePart}.`;
 }
 
 // ─────────────────────────────────────────
@@ -742,7 +745,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Greeting */}
-        <Text style={styles.greeting}>{getGreeting('Joel')}</Text>
+        <Text style={styles.greeting}>{getGreeting(getUserName())}</Text>
 
         {/* ── STATE C: Active outing hero ── */}
         {derivedState === 'C' && activeOuting && (
