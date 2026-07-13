@@ -24,6 +24,7 @@ export default function RootLayout() {
           return { animation: 'slide_from_bottom' };
         }}
       />
+      <Stack.Screen name="first-plan-reveal" options={{ animation: 'slide_from_bottom' }} />
     </Stack>
   );
 }
