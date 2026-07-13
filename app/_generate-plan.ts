@@ -1,10 +1,6 @@
 import { VENUES, type Venue } from '../data/venues';
 import { createStopInstanceId, type OutingPlan, type Stop } from './_outing-store';
 
-// ─────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────
-
 export type Category =
   | 'COFFEE & CAFÉS'
   | 'ARTS & CULTURE'
@@ -23,10 +19,6 @@ export type PlanInputs = {
   timeOfDay?: Date;
 };
 
-// ─────────────────────────────────────────
-//  STOP COUNT (by time of day)
-// ─────────────────────────────────────────
-
 export function getStopCountForTime(date: Date): number {
   const hour = date.getHours();
   if (hour < 15) return 4;
@@ -35,10 +27,6 @@ export function getStopCountForTime(date: Date): number {
   return 1;
 }
 
-// ─────────────────────────────────────────
-//  BUDGET
-// ─────────────────────────────────────────
-
 const BUDGET_RANK: Record<BudgetTier, number> = { Free: 0, '$': 1, '$$': 2, '$$$': 3 };
 
 function budgetAllows(priceTier: string, budget: BudgetTier): boolean {
@@ -46,10 +34,6 @@ function budgetAllows(priceTier: string, budget: BudgetTier): boolean {
   if (rank === undefined) return false;
   return rank <= BUDGET_RANK[budget];
 }
-
-// ─────────────────────────────────────────
-//  STOP SELECTION
-// ─────────────────────────────────────────
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -103,10 +87,6 @@ function selectPool(
 
   return { exact, widened: VENUES.filter(v => !exactIds.has(v.id)) };
 }
-
-// ─────────────────────────────────────────
-//  NAME + CAPTION TEMPLATES
-// ─────────────────────────────────────────
 
 const CATEGORY_TEMPLATES: Record<Category, { names: string[]; captions: string[] }> = {
   'COFFEE & CAFÉS': {
@@ -240,10 +220,6 @@ function buildVibeTags(vibes: string[], categories: Category[]): string[] {
   }
   return tags.slice(0, 3);
 }
-
-// ─────────────────────────────────────────
-//  GENERATE PLAN
-// ─────────────────────────────────────────
 
 export function generatePlan(inputs: PlanInputs): OutingPlan {
   const stopCount = getStopCountForTime(inputs.timeOfDay ?? new Date());

@@ -24,10 +24,6 @@ import { F } from '../data/fonts';
 import { getActiveOuting } from './_outing-store';
 import { getUserEmail, getUserName } from './_user-profile-store';
 
-// ─────────────────────────────────────────
-//  PROFILE ROW
-// ─────────────────────────────────────────
-
 function ProfileRow({
   Icon,
   label,
@@ -47,10 +43,6 @@ function ProfileRow({
     </Pressable>
   );
 }
-
-// ─────────────────────────────────────────
-//  SCREEN
-// ─────────────────────────────────────────
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -102,10 +94,6 @@ export default function ProfileScreen() {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   screen: {

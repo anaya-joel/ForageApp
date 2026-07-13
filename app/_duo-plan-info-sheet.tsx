@@ -30,18 +30,10 @@ import { F } from '../data/fonts';
 const OFFSCREEN_FALLBACK = 320;
 const MOTION_DURATION = 300;
 
-// ─────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────
-
 export interface DuoPlanInfoSheetProps {
   visible: boolean;
   onDismiss: () => void;
 }
-
-// ─────────────────────────────────────────
-//  COMPONENT
-// ─────────────────────────────────────────
 
 export default function DuoPlanInfoSheet({
   visible,
@@ -110,10 +102,6 @@ export default function DuoPlanInfoSheet({
     </Modal>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   root: {

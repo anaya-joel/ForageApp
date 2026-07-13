@@ -21,10 +21,6 @@ import { C } from '../data/colors';
 import { F } from '../data/fonts';
 import { getHistoryEntries, type HistoryEntry } from './_outing-history-store';
 
-// ─────────────────────────────────────────
-//  HISTORY ROW
-// ─────────────────────────────────────────
-
 function HistoryRow({ entry }: { entry: HistoryEntry }) {
   const stopCount  = entry.stops.length;
   const stopColors = entry.stops.map(s => s.color).slice(0, 3);
@@ -66,10 +62,6 @@ function HistoryRow({ entry }: { entry: HistoryEntry }) {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  SCREEN
-// ─────────────────────────────────────────
 
 export default function OutingHistoryScreen() {
   const router = useRouter();
@@ -124,10 +116,6 @@ export default function OutingHistoryScreen() {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   screen: {

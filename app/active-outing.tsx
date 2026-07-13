@@ -42,10 +42,6 @@ import { Line, Svg } from 'react-native-svg';
 import { C } from '../data/colors';
 import { F } from '../data/fonts';
 
-// ─────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────
-
 type TransportOpt = {
   mode: string;
   Icon: React.ComponentType<{ size: number; color: string }>;
@@ -53,10 +49,6 @@ type TransportOpt = {
   time: string;
   highlighted: boolean;
 };
-
-// ─────────────────────────────────────────
-//  PROGRESS STRIP
-// ─────────────────────────────────────────
 
 function DashedHLine() {
   const [w, setW] = useState(0);
@@ -108,10 +100,6 @@ function ProgressStrip({ total, completed }: { total: number; completed: number 
   );
 }
 
-// ─────────────────────────────────────────
-//  TRANSPORT CONNECTOR
-// ─────────────────────────────────────────
-
 function TransportConnector({ options }: { options: TransportOpt[] }) {
   const [expanded, setExpanded] = useState(false);
   if (options.length === 0) return null;
@@ -150,10 +138,6 @@ function TransportConnector({ options }: { options: TransportOpt[] }) {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  MAIN SCREEN
-// ─────────────────────────────────────────
 
 export default function ActiveOutingScreen() {
   const router = useRouter();
@@ -399,10 +383,6 @@ const transportOptions: TransportOpt[] = connector ? [
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },

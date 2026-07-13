@@ -22,10 +22,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '../data/colors';
 import { F } from '../data/fonts';
 
-// ─────────────────────────────────────────
-//  RATING DIMENSIONS
-// ─────────────────────────────────────────
-
 interface Dimension {
   key: string;
   label: string;
@@ -67,19 +63,11 @@ function getDominantCategory(stops: { category: string }[]): string {
   return dominant;
 }
 
-// ─────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────
-
 export interface OverallRatingPromptProps {
   outingId: string;
   stops: { category: string }[];
   onSubmit: (rating: { stars: number; dimensions: Record<string, string>; note?: string }) => void;
 }
-
-// ─────────────────────────────────────────
-//  COMPONENT
-// ─────────────────────────────────────────
 
 export default function OverallRatingPrompt({
   stops,
@@ -192,10 +180,6 @@ export default function OverallRatingPrompt({
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   root: {

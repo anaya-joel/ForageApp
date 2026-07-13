@@ -44,10 +44,6 @@ import { getCatIcon } from './_category-icons';
 import { getWorkingPlan } from './_outing-store';
 import { setPendingSwap } from './_swap-store';
 
-// ─────────────────────────────────────────
-//  CANDIDATE ROW
-// ─────────────────────────────────────────
-
 function CandidateRow({
   place,
   travelHint,
@@ -113,10 +109,6 @@ function CandidateRow({
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  MAIN SCREEN
-// ─────────────────────────────────────────
 
 export default function SwapStopScreen() {
   const router = useRouter();
@@ -213,10 +205,6 @@ export default function SwapStopScreen() {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },

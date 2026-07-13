@@ -104,10 +104,6 @@ type ProgressStripProps = {
   completed: number;
 };
 
-// ─────────────────────────────────────────
-//  SMALL SHARED COMPONENTS
-// ─────────────────────────────────────────
-
 /** Amber dot for "Scout's Pick" and "Active Outing" labels */
 function AmberDot({ pulse = false }) {
   const opacity = useRef(new Animated.Value(1)).current;
@@ -574,10 +570,6 @@ function ActiveOutingCard({ plan, onNextStop, onSeeDetails, onPreviousStop, isFi
   );
 }
 
-// ─────────────────────────────────────────
-//  GREETING
-// ─────────────────────────────────────────
-
 function getGreeting(name: string) {
   const trimmedName = name.trim();
   const namePart = trimmedName ? `, ${trimmedName}` : '';
@@ -587,10 +579,6 @@ function getGreeting(name: string) {
   if (h >= 18 && h < 24) return `Good evening${namePart}.`;
   return `Hey${namePart}.`;
 }
-
-// ─────────────────────────────────────────
-//  MAIN HOME SCREEN
-// ─────────────────────────────────────────
 
 export default function HomeScreen() {
   if (!getTasteProfileComplete()) {
@@ -742,10 +730,6 @@ export default function HomeScreen() {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   screen: {

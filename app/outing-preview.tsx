@@ -57,16 +57,6 @@ import {
 } from './_outing-store';
 import { consumePendingSwap } from './_swap-store';
 
-// ─────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────
-
-
-// ─────────────────────────────────────────
-//  HELPERS
-// ─────────────────────────────────────────
-
-
 function getTransportIcon(mode: TransportMode): React.ComponentType<{ size: number; color: string }> {
   if (mode === 'drive')   return Car;
   if (mode === 'transit') return Bus;
@@ -127,10 +117,6 @@ function tierRange(stops: Stop[]): string {
   return min === max ? min : `${min}–${max}`;
 }
 
-// ─────────────────────────────────────────
-//  DIRTY BACK SHEET
-// ─────────────────────────────────────────
-
 function DirtyBackSheet({
   visible,
   onContinue,
@@ -172,11 +158,6 @@ function DirtyBackSheet({
     </Modal>
   );
 }
-
-// ─────────────────────────────────────────
-//  DRAFT CAP MODAL
-// ─────────────────────────────────────────
-
 
 function DraftCapModal({
   visible,
@@ -229,10 +210,6 @@ function DraftCapModal({
     </Modal>
   );
 }
-
-// ─────────────────────────────────────────
-//  ADD STOP SHEET
-// ─────────────────────────────────────────
 
 function AddStopSheet({
   visible,
@@ -323,10 +300,6 @@ function AddStopSheet({
   );
 }
 
-// ─────────────────────────────────────────
-//  CONNECTOR STRIP
-// ─────────────────────────────────────────
-
 function ConnectorStrip({ connector }: { connector: { mode: TransportMode; time: string } }) {
   const TransIcon = getTransportIcon(connector.mode);
   return (
@@ -336,10 +309,6 @@ function ConnectorStrip({ connector }: { connector: { mode: TransportMode; time:
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STOP CARD
-// ─────────────────────────────────────────
 
 function StopCard({
   stop,
@@ -400,10 +369,6 @@ function StopCard({
   );
 }
 
-// ─────────────────────────────────────────
-//  ADD A STOP CARD
-// ─────────────────────────────────────────
-
 function AddStopCard({ onPress }: { onPress: () => void }) {
   return (
     <Pressable style={styles.addStopCard} onPress={onPress}>
@@ -411,10 +376,6 @@ function AddStopCard({ onPress }: { onPress: () => void }) {
     </Pressable>
   );
 }
-
-// ─────────────────────────────────────────
-//  REGENERATING STATE
-// ─────────────────────────────────────────
 
 function RegeneratingState() {
   return (
@@ -425,10 +386,6 @@ function RegeneratingState() {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  PLACE DETAIL MODAL
-// ─────────────────────────────────────────
 
 function PlaceDetailModal({
   stop,
@@ -556,10 +513,6 @@ function PlaceDetailModal({
     </Modal>
   );
 }
-
-// ─────────────────────────────────────────
-//  MAIN SCREEN
-// ─────────────────────────────────────────
 
 export default function OutingPreviewScreen() {
   const router = useRouter();
@@ -967,10 +920,6 @@ export default function OutingPreviewScreen() {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },

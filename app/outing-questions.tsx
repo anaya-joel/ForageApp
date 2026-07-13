@@ -21,10 +21,6 @@ import { F } from '../data/fonts';
 import { generatePlan, type BudgetTier, type Category, type PlanInputs } from './_generate-plan';
 import { setWorkingPlan } from './_outing-store';
 
-// ─────────────────────────────────────────
-//  OPTIONS
-// ─────────────────────────────────────────
-
 const CATEGORIES: Category[] = [
   'EAT & DRINK',
   'COFFEE & CAFÉS',
@@ -61,10 +57,6 @@ const VIBE_ROWS: string[][] = [];
 for (let i = 0; i < VIBES.length; i += 3) {
   VIBE_ROWS.push(VIBES.slice(i, i + 3));
 }
-
-// ─────────────────────────────────────────
-//  MAIN SCREEN
-// ─────────────────────────────────────────
 
 export default function OutingQuestionsScreen() {
   const router = useRouter();
@@ -213,10 +205,6 @@ export default function OutingQuestionsScreen() {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },

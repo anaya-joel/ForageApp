@@ -31,20 +31,12 @@ import { F } from '../data/fonts';
 const OFFSCREEN_FALLBACK = 320;
 const MOTION_DURATION = 300;
 
-// ─────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────
-
 export interface EndOutingConfirmSheetProps {
   planName: string;
   visible: boolean;
   onKeepGoing: () => void;
   onEndOuting: () => void;
 }
-
-// ─────────────────────────────────────────
-//  COMPONENT
-// ─────────────────────────────────────────
 
 export default function EndOutingConfirmSheet({
   planName,
@@ -117,10 +109,6 @@ export default function EndOutingConfirmSheet({
     </Modal>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   root: {

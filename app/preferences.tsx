@@ -38,10 +38,6 @@ const ALL_CATEGORIES: Category[] = [
 
 const REQUIRED_COUNT = 3;
 
-// ─────────────────────────────────────────
-//  CATEGORY CHIP
-// ─────────────────────────────────────────
-
 function CategoryChip({
   category,
   selected,
@@ -78,10 +74,6 @@ function CategoryChip({
     </Pressable>
   );
 }
-
-// ─────────────────────────────────────────
-//  SCREEN
-// ─────────────────────────────────────────
 
 export default function PreferencesScreen() {
   const router = useRouter();
@@ -185,10 +177,6 @@ export default function PreferencesScreen() {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   screen: {

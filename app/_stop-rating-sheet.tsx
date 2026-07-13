@@ -32,10 +32,6 @@ import { F } from '../data/fonts';
 const OFFSCREEN_FALLBACK = 320;
 const MOTION_DURATION = 300;
 
-// ─────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────
-
 export interface StopRatingSheetProps {
   stop: Stop;
   visible: boolean;
@@ -43,10 +39,6 @@ export interface StopRatingSheetProps {
   onSave: (saved: boolean) => void;
   onDismiss: () => void;
 }
-
-// ─────────────────────────────────────────
-//  COMPONENT
-// ─────────────────────────────────────────
 
 export default function StopRatingSheet({
   stop,
@@ -166,10 +158,6 @@ export default function StopRatingSheet({
     </Modal>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   root: {

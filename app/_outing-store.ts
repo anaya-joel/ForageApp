@@ -1,7 +1,3 @@
-// ─────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────
-
 export type TransportMode = 'walk' | 'drive' | 'transit';
 
 export type Stop = {
@@ -32,10 +28,6 @@ export type OutingPlan = {
   startTime: number | null;
   currentStopIndex: number;
 };
-
-// ─────────────────────────────────────────
-//  SEED DATA
-// ─────────────────────────────────────────
 
 export const INITIAL_PLAN: OutingPlan = {
   id: 'plan-initial',
@@ -96,10 +88,6 @@ export const INITIAL_PLAN: OutingPlan = {
   ],
 };
 
-// ─────────────────────────────────────────
-//  MODULE STATE
-// ─────────────────────────────────────────
-
 const DRAFT_CAP = 5;
 
 // The standing Scout's Pick shown on Home. Only changes via daily/time-of-day
@@ -116,10 +104,6 @@ let _activeOuting: OutingPlan | null = null;
 
 let _drafts: OutingPlan[] = [];
 
-// ─────────────────────────────────────────
-//  SCOUT SUGGESTION API
-// ─────────────────────────────────────────
-
 export function getScoutSuggestion(): OutingPlan {
   return _scoutSuggestion;
 }
@@ -127,10 +111,6 @@ export function getScoutSuggestion(): OutingPlan {
 export function setScoutSuggestion(plan: OutingPlan): void {
   _scoutSuggestion = plan;
 }
-
-// ─────────────────────────────────────────
-//  WORKING PLAN API
-// ─────────────────────────────────────────
 
 export function getWorkingPlan(): OutingPlan | null {
   return _workingPlan;
@@ -143,10 +123,6 @@ export function setWorkingPlan(plan: OutingPlan): void {
 export function clearWorkingPlan(): void {
   _workingPlan = null;
 }
-
-// ─────────────────────────────────────────
-//  DRAFT API
-// ─────────────────────────────────────────
 
 export function getDrafts(): OutingPlan[] {
   return _drafts;
@@ -195,10 +171,6 @@ export function saveDraftFromCurrent(): { success: boolean; capReached: boolean 
 export function deleteDraft(id: string): void {
   _drafts = _drafts.filter((d) => d.id !== id);
 }
-
-// ─────────────────────────────────────────
-//  ACTIVE OUTING API
-// ─────────────────────────────────────────
 
 export function getActiveOuting(): OutingPlan | null {
   return _activeOuting;

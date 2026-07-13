@@ -35,10 +35,6 @@ import { C } from '../data/colors';
 import { F } from '../data/fonts';
 import { VENUES, type Venue } from '../data/venues';
 
-// ─────────────────────────────────────────
-//  CATEGORY FILTER OPTIONS
-// ─────────────────────────────────────────
-
 const CATEGORIES = [
   'All',
   'EAT & DRINK',
@@ -86,10 +82,6 @@ function VenueCard({ item }: { item: Venue }) {
     </Pressable>
   );
 }
-
-// ─────────────────────────────────────────
-//  SCREEN
-// ─────────────────────────────────────────
 
 export default function ExploreScreen() {
   const router = useRouter();
@@ -169,10 +161,6 @@ export default function ExploreScreen() {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   screen: {

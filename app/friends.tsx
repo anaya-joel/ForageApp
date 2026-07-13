@@ -28,10 +28,6 @@ import { C } from '../data/colors';
 import { F } from '../data/fonts';
 import { getActiveOuting } from './_outing-store';
 
-// ─────────────────────────────────────────
-//  FAKE DATA
-// ─────────────────────────────────────────
-
 interface FriendRequest {
   id: string;
   name: string;
@@ -56,10 +52,6 @@ const FRIENDS: Friend[] = [
   { id: 'f5', name: 'Lena Castillo',  subtext: '2 outings together' },
 ];
 
-// ─────────────────────────────────────────
-//  AVATAR
-// ─────────────────────────────────────────
-
 // Reuses the app's 7 existing category color tokens rather than inventing
 // new ones, so fake-friend avatars stay in the same palette family.
 const AVATAR_COLORS = [
@@ -80,10 +72,6 @@ function Avatar({ name }: { name: string }) {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  REQUEST ROW
-// ─────────────────────────────────────────
 
 function RequestRow({
   name,
@@ -112,10 +100,6 @@ function RequestRow({
   );
 }
 
-// ─────────────────────────────────────────
-//  FRIEND ROW
-// ─────────────────────────────────────────
-
 function FriendRow({ name, subtext }: { name: string; subtext: string }) {
   return (
     <View style={[styles.card, styles.friendRow]}>
@@ -127,10 +111,6 @@ function FriendRow({ name, subtext }: { name: string; subtext: string }) {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  SCREEN
-// ─────────────────────────────────────────
 
 export default function FriendsScreen() {
   const router = useRouter();
@@ -232,10 +212,6 @@ export default function FriendsScreen() {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   screen: {

@@ -35,10 +35,6 @@ import {
   type OutingPlan,
 } from './_outing-store';
 
-// ─────────────────────────────────────────
-//  DRAFT ROW
-// ─────────────────────────────────────────
-
 function DraftRow({
   draft,
   onPress,
@@ -97,10 +93,6 @@ function DraftRow({
     </Pressable>
   );
 }
-
-// ─────────────────────────────────────────
-//  SCREEN
-// ─────────────────────────────────────────
 
 export default function DraftsScreen() {
   const router = useRouter();
@@ -189,10 +181,6 @@ export default function DraftsScreen() {
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },

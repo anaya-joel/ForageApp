@@ -14,10 +14,6 @@ import { getCatIcon, getCategoryColor } from './_category-icons';
 import { C } from '../data/colors';
 import { F } from '../data/fonts';
 
-// ─────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────
-
 export interface StopRatingPromptProps {
   stopId: string;
   placeName: string;
@@ -26,10 +22,6 @@ export interface StopRatingPromptProps {
   onSave: (saved: boolean) => void;
   onDismiss: () => void;
 }
-
-// ─────────────────────────────────────────
-//  COMPONENT
-// ─────────────────────────────────────────
 
 export default function StopRatingPrompt({
   placeName,
@@ -104,10 +96,6 @@ export default function StopRatingPrompt({
     </View>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   root: {

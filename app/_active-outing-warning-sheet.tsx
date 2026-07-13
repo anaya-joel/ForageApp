@@ -29,10 +29,6 @@ import { F } from '../data/fonts';
 const OFFSCREEN_FALLBACK = 320;
 const MOTION_DURATION = 300;
 
-// ─────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────
-
 export interface ActiveOutingWarningSheetProps {
   planName: string;
   stopsCompleted: number;
@@ -41,10 +37,6 @@ export interface ActiveOutingWarningSheetProps {
   onKeepGoing: () => void;
   onEndAndStartNew: () => void;
 }
-
-// ─────────────────────────────────────────
-//  COMPONENT
-// ─────────────────────────────────────────
 
 export default function ActiveOutingWarningSheet({
   planName,
@@ -121,10 +113,6 @@ export default function ActiveOutingWarningSheet({
     </Modal>
   );
 }
-
-// ─────────────────────────────────────────
-//  STYLES
-// ─────────────────────────────────────────
 
 const styles = StyleSheet.create({
   root: {

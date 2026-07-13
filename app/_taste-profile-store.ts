@@ -1,9 +1,5 @@
 import type { Category } from './_generate-plan';
 
-// ─────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────
-
 export type QuizOption = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export type QuizAnswers = {
@@ -18,10 +14,6 @@ export type TasteProfileResult = {
   categories: [Category, Category, Category]; // top 3, tie-broken
   vibes: string[]; // top 3, tie-broken, most-frequent-first
 };
-
-// ─────────────────────────────────────────
-//  WEIGHT TABLE
-// ─────────────────────────────────────────
 
 type QuestionOption = {
   primary: Category;
@@ -87,10 +79,6 @@ const VIBE_TIEBREAK: string[] = [
   'chill',
 ];
 
-// ─────────────────────────────────────────
-//  SCORING
-// ─────────────────────────────────────────
-
 export function scoreTasteProfile(answers: QuizAnswers): TasteProfileResult {
   const categoryTally = new Map<Category, number>(CATEGORY_TIEBREAK.map((cat) => [cat, 0]));
   const vibeTally = new Map<string, number>();
@@ -121,16 +109,8 @@ export function scoreTasteProfile(answers: QuizAnswers): TasteProfileResult {
   return { categories, vibes };
 }
 
-// ─────────────────────────────────────────
-//  MODULE STATE
-// ─────────────────────────────────────────
-
 let _tasteProfileComplete = false;
 let _tasteProfile: TasteProfileResult | null = null;
-
-// ─────────────────────────────────────────
-//  TASTE PROFILE API
-// ─────────────────────────────────────────
 
 export function getTasteProfileComplete(): boolean {
   return _tasteProfileComplete;

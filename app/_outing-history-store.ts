@@ -1,9 +1,5 @@
 import type { Stop } from './_outing-store';
 
-// ─────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────
-
 export type HistoryEntry = {
   id: string;
   name: string;
@@ -12,15 +8,7 @@ export type HistoryEntry = {
   vibeTags: string[];
 };
 
-// ─────────────────────────────────────────
-//  MODULE STATE
-// ─────────────────────────────────────────
-
 let _historyEntries: HistoryEntry[] = [];
-
-// ─────────────────────────────────────────
-//  OUTING HISTORY API
-// ─────────────────────────────────────────
 
 export function addHistoryEntry(entry: HistoryEntry): void {
   _historyEntries = [entry, ..._historyEntries];
