@@ -17,6 +17,7 @@ import {
   type OutingPlan,
   type Stop,
 } from './_outing-store';
+import { addHistoryEntry } from './_outing-history-store';
 import { generatePlan } from './_generate-plan';
 import { deriveInputsFromPlan } from './outing-preview';
 
@@ -103,7 +104,16 @@ export function useStopCompletion(outingId: string) {
   // performs the store mutation + local state reset, in the same order as
   // before extraction.
   function finishOuting() {
-    if (finishedPlan) regenerateScoutSuggestion(finishedPlan);
+    if (finishedPlan) {
+      regenerateScoutSuggestion(finishedPlan);
+      addHistoryEntry({
+        id: finishedPlan.id,
+        name: finishedPlan.name,
+        startTime: finishedPlan.startTime,
+        stops: finishedPlan.stops,
+        vibeTags: finishedPlan.vibeTags,
+      });
+    }
     endOuting();
     refreshPlan();
     setActivePrompt('none');
