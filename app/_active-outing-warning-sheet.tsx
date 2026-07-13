@@ -9,7 +9,7 @@
  * inert and only the two explicit buttons can dismiss it.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,

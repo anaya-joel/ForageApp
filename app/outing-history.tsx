@@ -15,7 +15,6 @@ import {
 import { useFonts } from 'expo-font';
 import { ChevronLeft, Clock } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '../data/colors';

@@ -25,7 +25,7 @@ import {
 import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
 import { MapPin } from 'lucide-react-native';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from './_bottom-nav';

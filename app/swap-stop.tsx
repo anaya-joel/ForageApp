@@ -27,7 +27,7 @@ import {
 import { useFonts } from 'expo-font';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   FlatList,
   Pressable,

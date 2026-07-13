@@ -16,7 +16,7 @@ import {
 import { useFonts } from 'expo-font';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft, Clock, Trash2 } from 'lucide-react-native';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Pressable,
   ScrollView,

@@ -125,14 +125,6 @@ function AmberDot({ pulse = false }) {
   return <Animated.View style={[styles.amberDot, { opacity }]} />;
 }
 
-/** Category circle used in stop lists */
-function CategoryCircle({ color, size = 40 }: { color: string; size?: number }) {
-  return (
-    <View style={[styles.catCircle, { width: size, height: size, borderRadius: size / 2, backgroundColor: color }]} />
-  );
-}
-
-
 /** For You card — 160 × 232 */
 function ForYouCard({ item }: { item: Venue }) {
   const [saved, setSaved] = useState(false);
@@ -641,7 +633,7 @@ export default function HomeScreen() {
       <OverallRatingPrompt
         outingId={stopCompletion.finishedPlan.id}
         stops={stopCompletion.finishedPlan.stops}
-        onSubmit={rating => {
+        onSubmit={() => {
           stopCompletion.finishOuting();
           if (pendingFabRedirect) {
             setPendingFabRedirect(false);
@@ -798,10 +790,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  catCircle: {
-    flexShrink: 0,
-  },
-  
   // ── Scout Card ──
   scoutCard: {
     backgroundColor: C.card,

@@ -20,7 +20,6 @@ export type PlanInputs = {
   categories: Category[];
   vibes: string[];
   budget: BudgetTier;
-  duration?: number;
   timeOfDay?: Date;
 };
 
@@ -291,10 +290,7 @@ export function generatePlan(inputs: PlanInputs): OutingPlan {
     name,
     caption,
     vibeTags,
-    variant: 'generated',
-    isDraft: false,
     lastEdited: null,
-    hasBegun: false,
     startTime: null,
     currentStopIndex: 0,
     stops,

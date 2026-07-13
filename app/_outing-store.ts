@@ -22,18 +22,13 @@ export function createStopInstanceId(): string {
   return `stop-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export type OutingVariant = 'initial' | 'alternate' | 'generated';
-
 export type OutingPlan = {
   id: string;
   name: string;
   caption: string;
   vibeTags: string[];
   stops: Stop[];
-  variant: OutingVariant;
-  isDraft: boolean;
   lastEdited: number | null;
-  hasBegun: boolean;
   startTime: number | null;
   currentStopIndex: number;
 };
@@ -47,10 +42,7 @@ export const INITIAL_PLAN: OutingPlan = {
   name: 'DC Art & Coffee Loop',
   caption: 'Coffee, culture, and something to show for it.',
   vibeTags: ['Artsy', 'Walkable', 'Cultural'],
-  variant: 'initial',
-  isDraft: false,
   lastEdited: null,
-  hasBegun: false,
   startTime: null,
   currentStopIndex: 0,
   stops: [
@@ -100,68 +92,6 @@ export const INITIAL_PLAN: OutingPlan = {
       priceTier: '$$$',
       description:
         "A James Beard–nominated restaurant celebrating the Mid-Atlantic's finest ingredients over a wood-burning hearth.",
-    },
-  ],
-};
-
-export const ALTERNATE_PLAN: OutingPlan = {
-  id: 'plan-alternate',
-  name: 'Capitol Hill Culture Day',
-  caption: 'History, market stalls, and a proper dinner.',
-  vibeTags: ['Historic', 'Curated', 'Local'],
-  variant: 'alternate',
-  isDraft: false,
-  lastEdited: null,
-  hasBegun: false,
-  startTime: null,
-  currentStopIndex: 0,
-  stops: [
-    {
-      id: 'c1',
-      stopInstanceId: 'seed-alt-a1',
-      name: 'Bluestone Lane',
-      category: 'COFFEE & CAFÉS',
-      color: '#6B4530',
-      neighborhood: 'Logan Circle',
-      priceTier: '$$',
-      description:
-        'Australian-style café known for specialty espresso drinks and all-day avocado toast in a light-filled space.',
-      connector: { mode: 'walk', time: '6 min walk' },
-    },
-    {
-      id: 'c4',
-      stopInstanceId: 'seed-alt-a2',
-      name: 'National Portrait Gallery',
-      category: 'ARTS & CULTURE',
-      color: '#5C4080',
-      neighborhood: 'Penn Quarter',
-      priceTier: 'Free',
-      description:
-        'Presidential portraits and bold contemporary commissions inside a stunning neoclassical palace.',
-      connector: { mode: 'transit', time: '18 min ride' },
-    },
-    {
-      id: 'c11',
-      stopInstanceId: 'seed-alt-a3',
-      name: 'Eastern Market',
-      category: 'MARKETS',
-      color: '#A0622A',
-      neighborhood: 'Capitol Hill',
-      priceTier: '$',
-      description:
-        "Capitol Hill's historic market with weekend vendors, local produce, and handcrafted goods since 1873.",
-      connector: { mode: 'walk', time: '10 min walk' },
-    },
-    {
-      id: 'c9',
-      stopInstanceId: 'seed-alt-a4',
-      name: 'Cranes',
-      category: 'EAT & DRINK',
-      color: '#B84E38',
-      neighborhood: 'Penn Quarter',
-      priceTier: '$$$',
-      description:
-        'Japanese-Spanish kaiseki cuisine in a serene Penn Quarter setting — best seats at the omakase counter.',
     },
   ],
 };
@@ -242,7 +172,6 @@ export function saveDraftFromCurrent(): { success: boolean; capReached: boolean 
       ? _drafts[existingIdx].id
       : `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     stops: [...workingPlan.stops],
-    isDraft: true,
     lastEdited: Date.now(),
   };
 
@@ -263,13 +192,6 @@ export function saveDraftFromCurrent(): { success: boolean; capReached: boolean 
   return { success: true, capReached: false };
 }
 
-export function hasAllVariantsExhausted(): boolean {
-  return (
-    _drafts.some((d) => d.id === 'plan-initial') &&
-    _drafts.some((d) => d.id === 'plan-alternate')
-  );
-}
-
 export function deleteDraft(id: string): void {
   _drafts = _drafts.filter((d) => d.id !== id);
 }
@@ -280,10 +202,6 @@ export function deleteDraft(id: string): void {
 
 export function getActiveOuting(): OutingPlan | null {
   return _activeOuting;
-}
-
-export function setActiveOuting(plan: OutingPlan): void {
-  _activeOuting = plan;
 }
 
 export function clearActiveOuting(): void {
@@ -297,7 +215,6 @@ export function beginOuting(): void {
   const source = _workingPlan ?? _scoutSuggestion;
   _activeOuting = {
     ...source,
-    hasBegun: true,
     startTime: Date.now(),
     currentStopIndex: 0,
   };
@@ -322,9 +239,4 @@ export function goToPreviousStop(): void {
 
 export function endOuting(): void {
   clearActiveOuting();
-}
-
-export function isOutingComplete(): boolean {
-  if (!_activeOuting) return false;
-  return _activeOuting.currentStopIndex >= _activeOuting.stops.length;
 }

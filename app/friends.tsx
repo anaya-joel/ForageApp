@@ -19,7 +19,7 @@ import {
 import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
 import { ChevronRight, Users } from 'lucide-react-native';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from './_bottom-nav';
