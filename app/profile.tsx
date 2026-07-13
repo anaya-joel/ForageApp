@@ -21,6 +21,7 @@ import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from './_bottom-nav';
 import { C } from '../data/colors';
+import { getActiveOuting } from './_outing-store';
 import { getUserEmail, getUserName } from './_user-profile-store';
 
 // ─────────────────────────────────────────
@@ -99,7 +100,16 @@ export default function ProfileScreen() {
       </ScrollView>
 
       {/* ── BOTTOM NAV ── */}
-      <BottomNav activeTab="Profile" />
+      <BottomNav
+        activeTab="Profile"
+        onFabPress={() => {
+          if (getActiveOuting()) {
+            router.push('/');
+          } else {
+            router.push('/outing-questions');
+          }
+        }}
+      />
     </View>
   );
 }
