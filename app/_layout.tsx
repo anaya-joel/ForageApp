@@ -7,6 +7,15 @@ export default function RootLayout() {
       <Stack.Screen name="explore" options={{ animation: 'none' }} />
       <Stack.Screen name="friends" options={{ animation: 'none' }} />
       <Stack.Screen name="profile" options={{ animation: 'none' }} />
+      <Stack.Screen name="outing-questions" options={{ animation: 'default' }} />
+      <Stack.Screen name="drafts" options={{ animation: 'default' }} />
+      <Stack.Screen name="outing-history" options={{ animation: 'default' }} />
+      <Stack.Screen name="preferences" options={{ animation: 'default' }} />
+      <Stack.Screen name="q1" options={{ animation: 'default' }} />
+      <Stack.Screen name="q2" options={{ animation: 'default' }} />
+      <Stack.Screen name="q3" options={{ animation: 'default' }} />
+      <Stack.Screen name="q4" options={{ animation: 'default' }} />
+      <Stack.Screen name="q5" options={{ animation: 'default' }} />
     </Stack>
   );
 }
