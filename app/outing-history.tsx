@@ -18,7 +18,6 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import BottomNav from './_bottom-nav';
 import { C } from '../data/colors';
 import { getHistoryEntries, type HistoryEntry } from './_outing-history-store';
 
@@ -133,9 +132,6 @@ export default function OutingHistoryScreen() {
           ))}
         </ScrollView>
       )}
-
-      {/* ── BOTTOM NAV ── */}
-      <BottomNav activeTab="Profile" />
     </View>
   );
 }

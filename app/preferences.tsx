@@ -19,7 +19,6 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import BottomNav from './_bottom-nav';
 import { getCatIcon, getCategoryColor } from './_category-icons';
 import { C } from '../data/colors';
 import { generatePlan, type Category, type PlanInputs } from './_generate-plan';
@@ -193,9 +192,6 @@ export default function PreferencesScreen() {
           <Text style={[styles.saveBtnText, !canSave && styles.saveBtnTextDisabled]}>Save</Text>
         </Pressable>
       </ScrollView>
-
-      {/* ── BOTTOM NAV ── */}
-      <BottomNav activeTab="Profile" />
     </View>
   );
 }

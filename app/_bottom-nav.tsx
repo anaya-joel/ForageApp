@@ -1,5 +1,6 @@
 import { Home, MapPin, Sparkles, User, Users } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,6 +18,7 @@ const F = {
 
 export default function BottomNav({ activeTab = 'Home', onFabPress, onProfilePress }: { activeTab?: string; onFabPress?: () => void; onProfilePress?: () => void }) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const tabs = [
     { name: 'Home',    Icon: Home },
     { name: 'Explore', Icon: MapPin },
@@ -53,7 +55,12 @@ export default function BottomNav({ activeTab = 'Home', onFabPress, onProfilePre
           <Pressable
             key={tab.name}
             style={styles.navTab}
-            onPress={tab.name === 'Profile' ? onProfilePress : undefined}
+            onPress={
+              isActive ? undefined :
+              tab.name === 'Home' ? () => router.push('/') :
+              tab.name === 'Profile' ? onProfilePress :
+              undefined
+            }
           >
             <Icon size={22} color={iconColor} />
             <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
