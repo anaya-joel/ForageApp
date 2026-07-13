@@ -96,7 +96,7 @@ export default function OutingQuestionsScreen() {
     };
     const plan = generatePlan(inputs);
     setWorkingPlan(plan);
-    router.push('/outing-preview');
+    router.push({ pathname: '/outing-preview', params: { fromQuestions: '1' } });
   }
 
   return (
