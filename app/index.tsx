@@ -756,7 +756,7 @@ export default function HomeScreen() {
             router.push('/outing-questions');
           }
         }}
-        onProfilePress={() => router.push('/drafts')}
+        onProfilePress={() => router.push('/profile')}
       />
     </View>
   );
