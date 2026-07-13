@@ -19,18 +19,8 @@ import React from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '../data/colors';
+import { F } from '../data/fonts';
 import { getHistoryEntries, type HistoryEntry } from './_outing-history-store';
-
-// ─────────────────────────────────────────
-//  DESIGN TOKENS
-// ─────────────────────────────────────────
-
-const F = {
-  serif: 'LibreBaskerville_700Bold',
-  reg:   'PlusJakartaSans_400Regular',
-  med:   'PlusJakartaSans_500Medium',
-  semi:  'PlusJakartaSans_600SemiBold',
-};
 
 // ─────────────────────────────────────────
 //  HISTORY ROW

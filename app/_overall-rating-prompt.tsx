@@ -19,6 +19,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { F } from '../data/fonts';
 
 // ─────────────────────────────────────────
 //  DESIGN TOKENS
@@ -33,13 +34,6 @@ const C = {
   textSec:     '#6B6460',
   textTert:    '#9A8E88',
   border:      '#EDE8E2',
-};
-
-const F = {
-  serif: 'LibreBaskerville_700Bold',
-  reg:   'PlusJakartaSans_400Regular',
-  med:   'PlusJakartaSans_500Medium',
-  semi:  'PlusJakartaSans_600SemiBold',
 };
 
 // ─────────────────────────────────────────

@@ -38,6 +38,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { VENUES, type Venue } from '../data/venues';
+import { F } from '../data/fonts';
 import { getCatIcon } from './_category-icons';
 import { getWorkingPlan } from './_outing-store';
 import { setPendingSwap } from './_swap-store';
@@ -57,13 +58,6 @@ const C = {
   textTert:    '#9A8E88',
   border:      '#EDE8E2',
   divider:     '#F5F0EA',
-};
-
-const F = {
-  serif: 'LibreBaskerville_700Bold',
-  reg:   'PlusJakartaSans_400Regular',
-  med:   'PlusJakartaSans_500Medium',
-  semi:  'PlusJakartaSans_600SemiBold',
 };
 
 // ─────────────────────────────────────────

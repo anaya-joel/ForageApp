@@ -11,6 +11,7 @@ import { Heart, Star } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { getCatIcon, getCategoryColor } from './_category-icons';
+import { F } from '../data/fonts';
 
 // ─────────────────────────────────────────
 //  DESIGN TOKENS
@@ -24,12 +25,6 @@ const C = {
   textTert:    '#9A8E88',
   border:      '#EDE8E2',
   eat:         '#B84E38',
-};
-
-const F = {
-  reg:  'PlusJakartaSans_400Regular',
-  med:  'PlusJakartaSans_500Medium',
-  semi: 'PlusJakartaSans_600SemiBold',
 };
 
 // ─────────────────────────────────────────

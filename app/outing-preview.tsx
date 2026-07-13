@@ -25,6 +25,7 @@ import {
 import { getCatIcon } from './_category-icons';
 import { generatePlan, type Category, type PlanInputs } from './_generate-plan';
 import { C } from '../data/colors';
+import { F } from '../data/fonts';
 import { VENUES, type Venue } from '../data/venues';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -55,17 +56,6 @@ import {
   type TransportMode,
 } from './_outing-store';
 import { consumePendingSwap } from './_swap-store';
-
-// ─────────────────────────────────────────
-//  DESIGN TOKENS
-// ─────────────────────────────────────────
-
-const F = {
-  serif: 'LibreBaskerville_700Bold',
-  reg:   'PlusJakartaSans_400Regular',
-  med:   'PlusJakartaSans_500Medium',
-  semi:  'PlusJakartaSans_600SemiBold',
-};
 
 // ─────────────────────────────────────────
 //  TYPES

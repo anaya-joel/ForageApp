@@ -35,6 +35,7 @@ import OverallRatingPrompt from './_overall-rating-prompt';
 import StopRatingSheet from './_stop-rating-sheet';
 import { useStopCompletion } from './_use-stop-completion';
 import { C } from '../data/colors';
+import { F } from '../data/fonts';
 import { VENUES, type Venue } from '../data/venues';
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -62,17 +63,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Line, Svg } from 'react-native-svg';
 
 SplashScreen.preventAutoHideAsync();
-
-// ─────────────────────────────────────────
-//  DESIGN TOKENS
-// ─────────────────────────────────────────
-
-const F = {
-  serif:  'LibreBaskerville_700Bold',
-  reg:    'PlusJakartaSans_400Regular',
-  med:    'PlusJakartaSans_500Medium',
-  semi:   'PlusJakartaSans_600SemiBold',
-};
 
 // ─────────────────────────────────────────
 //  SAMPLE DATA  (replace with API / state)

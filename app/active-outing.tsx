@@ -39,6 +39,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Line, Svg } from 'react-native-svg';
+import { F } from '../data/fonts';
 
 // ─────────────────────────────────────────
 //  DESIGN TOKENS
@@ -65,13 +66,6 @@ const C = {
   nightlife:   '#2A1F4E',
   markets:     '#A0622A',
   experiences: '#2A7080',
-};
-
-const F = {
-  serif: 'LibreBaskerville_700Bold',
-  reg:   'PlusJakartaSans_400Regular',
-  med:   'PlusJakartaSans_500Medium',
-  semi:  'PlusJakartaSans_600SemiBold',
 };
 
 // ─────────────────────────────────────────

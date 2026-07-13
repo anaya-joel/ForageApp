@@ -32,18 +32,8 @@ import BottomNav from './_bottom-nav';
 import { getCatIcon } from './_category-icons';
 import { getActiveOuting } from './_outing-store';
 import { C } from '../data/colors';
+import { F } from '../data/fonts';
 import { VENUES, type Venue } from '../data/venues';
-
-// ─────────────────────────────────────────
-//  DESIGN TOKENS
-// ─────────────────────────────────────────
-
-const F = {
-  serif: 'LibreBaskerville_700Bold',
-  reg:   'PlusJakartaSans_400Regular',
-  med:   'PlusJakartaSans_500Medium',
-  semi:  'PlusJakartaSans_600SemiBold',
-};
 
 // ─────────────────────────────────────────
 //  CATEGORY FILTER OPTIONS

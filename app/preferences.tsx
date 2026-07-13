@@ -21,20 +21,10 @@ import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCatIcon, getCategoryColor } from './_category-icons';
 import { C } from '../data/colors';
+import { F } from '../data/fonts';
 import { generatePlan, type Category, type PlanInputs } from './_generate-plan';
 import { setScoutSuggestion } from './_outing-store';
 import { getTasteProfile, setTasteProfile } from './_taste-profile-store';
-
-// ─────────────────────────────────────────
-//  DESIGN TOKENS
-// ─────────────────────────────────────────
-
-const F = {
-  serif: 'LibreBaskerville_700Bold',
-  reg:   'PlusJakartaSans_400Regular',
-  med:   'PlusJakartaSans_500Medium',
-  semi:  'PlusJakartaSans_600SemiBold',
-};
 
 const ALL_CATEGORIES: Category[] = [
   'COFFEE & CAFÉS',

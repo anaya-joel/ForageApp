@@ -25,18 +25,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from './_bottom-nav';
 import DuoPlanInfoSheet from './_duo-plan-info-sheet';
 import { C } from '../data/colors';
+import { F } from '../data/fonts';
 import { getActiveOuting } from './_outing-store';
-
-// ─────────────────────────────────────────
-//  DESIGN TOKENS
-// ─────────────────────────────────────────
-
-const F = {
-  serif: 'LibreBaskerville_700Bold',
-  reg:   'PlusJakartaSans_400Regular',
-  med:   'PlusJakartaSans_500Medium',
-  semi:  'PlusJakartaSans_600SemiBold',
-};
 
 // ─────────────────────────────────────────
 //  FAKE DATA

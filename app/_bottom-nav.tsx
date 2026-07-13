@@ -5,11 +5,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '../data/colors';
-
-const F = {
-  reg:  'PlusJakartaSans_400Regular',
-  semi: 'PlusJakartaSans_600SemiBold',
-};
+import { F } from '../data/fonts';
 
 // ─────────────────────────────────────────
 //  BOTTOM NAV  (visual stub — replace with

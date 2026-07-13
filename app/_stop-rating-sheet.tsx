@@ -23,6 +23,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCatIcon, getCategoryColor } from './_category-icons';
 import type { Stop } from './_outing-store';
+import { F } from '../data/fonts';
 
 // ─────────────────────────────────────────
 //  DESIGN TOKENS
@@ -36,12 +37,6 @@ const C = {
   textTert:    '#9A8E88',
   border:      '#EDE8E2',
   eat:         '#B84E38',
-};
-
-const F = {
-  reg:  'PlusJakartaSans_400Regular',
-  med:  'PlusJakartaSans_500Medium',
-  semi: 'PlusJakartaSans_600SemiBold',
 };
 
 // Fallback offscreen distance used before the sheet's real height has been

@@ -27,23 +27,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '../data/colors';
+import { F } from '../data/fonts';
 import {
   deleteDraft,
   getDrafts,
   saveDraftFromCurrent,
   type OutingPlan,
 } from './_outing-store';
-
-// ─────────────────────────────────────────
-//  DESIGN TOKENS
-// ─────────────────────────────────────────
-
-const F = {
-  serif: 'LibreBaskerville_700Bold',
-  reg:   'PlusJakartaSans_400Regular',
-  med:   'PlusJakartaSans_500Medium',
-  semi:  'PlusJakartaSans_600SemiBold',
-};
 
 // ─────────────────────────────────────────
 //  DRAFT ROW
