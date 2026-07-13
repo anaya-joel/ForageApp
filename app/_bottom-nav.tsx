@@ -16,7 +16,7 @@ const F = {
 //  Expo Router tabs or React Navigation)
 // ─────────────────────────────────────────
 
-export default function BottomNav({ activeTab = 'Home', onFabPress, onProfilePress }: { activeTab?: string; onFabPress?: () => void; onProfilePress?: () => void }) {
+export default function BottomNav({ activeTab = 'Home', onFabPress }: { activeTab?: string; onFabPress?: () => void }) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const tabs = [
@@ -59,7 +59,7 @@ export default function BottomNav({ activeTab = 'Home', onFabPress, onProfilePre
               isActive ? undefined :
               tab.name === 'Home' ? () => router.push('/') :
               tab.name === 'Explore' ? () => router.push('/explore') :
-              tab.name === 'Profile' ? onProfilePress :
+              tab.name === 'Profile' ? () => router.push('/profile') :
               tab.name === 'Friends' ? () => router.push('/friends') :
               undefined
             }
