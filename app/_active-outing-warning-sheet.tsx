@@ -20,20 +20,8 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { C } from '../data/colors';
 import { F } from '../data/fonts';
-
-// ─────────────────────────────────────────
-//  DESIGN TOKENS
-// ─────────────────────────────────────────
-
-const C = {
-  card:        '#FFFFFF',
-  amber:       '#B86820',
-  textPrimary: '#2A2420',
-  textSec:     '#6B6460',
-  textTert:    '#9A8E88',
-  border:      '#EDE8E2',
-};
 
 // Fallback offscreen distance used before the sheet's real height has been
 // measured via onLayout, so the very first slide-in still has somewhere to

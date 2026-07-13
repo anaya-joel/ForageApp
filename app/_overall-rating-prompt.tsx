@@ -19,22 +19,8 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { C } from '../data/colors';
 import { F } from '../data/fonts';
-
-// ─────────────────────────────────────────
-//  DESIGN TOKENS
-// ─────────────────────────────────────────
-
-const C = {
-  bg:          '#F3EDE4',
-  card:        '#FFFFFF',
-  amber:       '#B86820',
-  amberTint:   '#FEF4E8',
-  textPrimary: '#2A2420',
-  textSec:     '#6B6460',
-  textTert:    '#9A8E88',
-  border:      '#EDE8E2',
-};
 
 // ─────────────────────────────────────────
 //  RATING DIMENSIONS

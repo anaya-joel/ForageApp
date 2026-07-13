@@ -11,21 +11,8 @@ import { Heart, Star } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { getCatIcon, getCategoryColor } from './_category-icons';
+import { C } from '../data/colors';
 import { F } from '../data/fonts';
-
-// ─────────────────────────────────────────
-//  DESIGN TOKENS
-// ─────────────────────────────────────────
-
-const C = {
-  card:        '#FFFFFF',
-  amber:       '#B86820',
-  textPrimary: '#2A2420',
-  textSec:     '#6B6460',
-  textTert:    '#9A8E88',
-  border:      '#EDE8E2',
-  eat:         '#B84E38',
-};
 
 // ─────────────────────────────────────────
 //  TYPES

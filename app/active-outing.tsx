@@ -39,34 +39,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Line, Svg } from 'react-native-svg';
+import { C } from '../data/colors';
 import { F } from '../data/fonts';
-
-// ─────────────────────────────────────────
-//  DESIGN TOKENS
-// ─────────────────────────────────────────
-
-const C = {
-  bg:          '#F3EDE4',
-  card:        '#FFFFFF',
-  amber:       '#B86820',
-  amberTint:   '#FEF4E8',
-  amberBorder: '#DDB878',
-  fabTop:      '#D4891F',
-  fabBottom:   '#7A3F08',
-  textPrimary: '#2A2420',
-  textSec:     '#6B6460',
-  textTert:    '#9A8E88',
-  border:      '#EDE8E2',
-  divider:     '#F5F0EA',
-  progressBg:  '#F8F5F0',
-  eat:         '#B84E38',
-  coffee:      '#6B4530',
-  outdoors:    '#3A6445',
-  arts:        '#5C4080',
-  nightlife:   '#2A1F4E',
-  markets:     '#A0622A',
-  experiences: '#2A7080',
-};
 
 // ─────────────────────────────────────────
 //  TYPES

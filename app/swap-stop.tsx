@@ -38,27 +38,11 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { VENUES, type Venue } from '../data/venues';
+import { C } from '../data/colors';
 import { F } from '../data/fonts';
 import { getCatIcon } from './_category-icons';
 import { getWorkingPlan } from './_outing-store';
 import { setPendingSwap } from './_swap-store';
-
-// ─────────────────────────────────────────
-//  DESIGN TOKENS
-// ─────────────────────────────────────────
-
-const C = {
-  bg:          '#F3EDE4',
-  card:        '#FFFFFF',
-  amber:       '#B86820',
-  amberTint:   '#FEF4E8',
-  amberBorder: '#DDB878',
-  textPrimary: '#2A2420',
-  textSec:     '#6B6460',
-  textTert:    '#9A8E88',
-  border:      '#EDE8E2',
-  divider:     '#F5F0EA',
-};
 
 // ─────────────────────────────────────────
 //  CANDIDATE ROW
