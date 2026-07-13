@@ -58,6 +58,7 @@ export default function BottomNav({ activeTab = 'Home', onFabPress, onProfilePre
             onPress={
               isActive ? undefined :
               tab.name === 'Home' ? () => router.push('/') :
+              tab.name === 'Explore' ? () => router.push('/explore') :
               tab.name === 'Profile' ? onProfilePress :
               tab.name === 'Friends' ? () => router.push('/friends') :
               undefined
