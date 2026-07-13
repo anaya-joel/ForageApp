@@ -259,11 +259,15 @@ behavior; actual storage remains a known v1 gap.
 ## [7/7] — Home Scout suggestion regeneration on outing-end is a proxy, not real personalization
 
 app/active-outing.tsx now regenerates the home screen's Scout's Pick when an
-outing ends (natural completion via the currentStop-null useEffect, the
-isOutingComplete() branch after the final stop, and early End Outing), so
-the home screen stops showing the exact same finished plan. This replaces
-an earlier, reverted attempt that called generatePlan() with hardcoded/empty
-PlanInputs.
+outing ends (natural completion via the currentStop-null useEffect, and
+early End Outing), so the home screen stops showing the exact same finished
+plan. This replaces an earlier, reverted attempt that called generatePlan()
+with hardcoded/empty PlanInputs.
+
+Completion itself is checked inline (a currentStop null-check plus a
+currentStopIndex === stops.length - 1 comparison), not via a dedicated
+helper — an isOutingComplete() function existed in _outing-store.ts but was
+never called anywhere; it was removed as dead code in a later cleanup pass.
 
 Input source used: `deriveInputsFromPlan()`, exported from
 app/outing-preview.tsx (previously local/unexported; used there by the
