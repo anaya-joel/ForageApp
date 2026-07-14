@@ -1,25 +1,11 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { setTasteProfileComplete } from './_taste-profile-store';
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.screen}>
-      {/* DEV ONLY — remove before public release */}
-      <Pressable
-        style={[styles.skipButton, { top: insets.top + 10 }]}
-        onPress={() => {
-          setTasteProfileComplete(true);
-          router.replace('/');
-        }}
-      >
-        <Text style={styles.skipText}>Skip →</Text>
-      </Pressable>
-
       <Text style={styles.label}>Welcome</Text>
       <Pressable style={styles.button} onPress={() => router.push('/signup')}>
         <Text style={styles.buttonText}>Next</Text>
@@ -48,13 +34,5 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
-  },
-  skipButton: {
-    position: 'absolute',
-    right: 20,
-  },
-  skipText: {
-    color: '#999',
-    fontSize: 13,
   },
 });
