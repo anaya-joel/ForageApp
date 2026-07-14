@@ -209,7 +209,7 @@ export const VENUES: Venue[] = [
     neighborhood: 'U Street',
     priceTier: '$',
     description: "A DC institution since 1958 — half-smokes, chili, and a counter that's seen every era of the city pass through.",
-    hours: 'Mon–Thu 6am–2am, Fri–Sat 6am–4am, Sun 11am–8pm',
+    hours: 'Mon–Thu 11am–11pm, Fri–Sat 11am–4am, Sun 11am–11pm',
   },
 
   // ── Markets ──
@@ -260,10 +260,10 @@ export const VENUES: Venue[] = [
     name: 'Flash Nightclub',
     category: 'NIGHTLIFE',
     color: C.nightlife,
-    neighborhood: 'Penn Quarter',
+    neighborhood: 'Shaw',
     priceTier: '$$',
     description: "DC's premier underground electronic music venue with world-class DJs.",
-    hours: 'Fri–Sat 10pm–4am',
+    hours: 'Thu 10pm–3am, Fri 10pm–4am, Sat 4pm–4am, Sun 3pm–12am',
   },
   {
     id: 'night2',
