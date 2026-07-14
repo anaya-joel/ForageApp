@@ -19,8 +19,9 @@ export default function RootLayout() {
       <Stack.Screen
         name="outing-preview"
         options={({ route }) => {
-          if (route.params?.draftId) return { animation: 'default' };
-          if (route.params?.fromQuestions) return { animation: 'default' };
+          const params = route.params as { draftId?: string; fromQuestions?: string };
+          if (params?.draftId) return { animation: 'default' };
+          if (params?.fromQuestions) return { animation: 'default' };
           return { animation: 'slide_from_bottom' };
         }}
       />
