@@ -1,16 +1,3 @@
-/**
- * FORAGE — HomeScreen.jsx
- *
- * Drop this file into your Expo project at: app/index.jsx  (or screens/HomeScreen.jsx)
- *
- * SETUP — run these commands in your project root BEFORE using this file:
- *   npx expo install expo-font expo-splash-screen react-native-safe-area-context react-native-svg
- *   npx expo install @expo-google-fonts/libre-baskerville @expo-google-fonts/plus-jakarta-sans
- *   npm install lucide-react-native
- *
- * PUT logo_app.png in:  assets/images/scout.png
- */
-
 import { LibreBaskerville_700Bold } from '@expo-google-fonts/libre-baskerville';
 import {
   PlusJakartaSans_400Regular,
