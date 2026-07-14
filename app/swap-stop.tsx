@@ -160,7 +160,7 @@ export default function SwapStopScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
 
       {/* ── HEADER ── */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <View style={[styles.header, { paddingTop: 12 }]}>
         <Pressable
           onPress={() => router.back()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -211,8 +211,6 @@ const styles = StyleSheet.create({
 
   // ── Header ──
   header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
     paddingHorizontal: 18,
     paddingBottom: 16,
     borderBottomWidth: 1,
@@ -220,22 +218,15 @@ const styles = StyleSheet.create({
     backgroundColor: C.bg,
   },
   backBtn: {
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-    flexShrink: 0,
-    marginTop: 2,
+    alignSelf: 'flex-start',
+    marginBottom: 24,
   },
   cancelText: {
     fontFamily: F.semi,
     fontSize: 15,
     color: C.textPrimary,
   },
-  headerText: {
-    flex: 1,
-    paddingTop: 4,
-  },
+  headerText: {},
   headerTitle: {
     fontFamily: F.serif,
     fontSize: 22,
