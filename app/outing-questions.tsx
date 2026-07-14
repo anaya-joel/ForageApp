@@ -75,6 +75,8 @@ export default function OutingQuestionsScreen() {
 
   if (!fontsLoaded && !fontError) return null;
 
+  const canFindOuting = selectedCategories.length > 0;
+
   function toggleCategory(cat: Category) {
     setSelectedCategories((prev) =>
       prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
@@ -206,8 +208,14 @@ export default function OutingQuestionsScreen() {
 
       {/* ── FIXED BOTTOM CTA ── */}
       <View style={[styles.bottomCTA, { paddingBottom: insets.bottom + 12 }]}>
-        <Pressable style={styles.findBtn} onPress={handleFindOuting}>
-          <Text style={styles.findBtnText}>Find my outing</Text>
+        <Pressable
+          style={[styles.findBtn, !canFindOuting && styles.findBtnDisabled]}
+          onPress={handleFindOuting}
+          disabled={!canFindOuting}
+        >
+          <Text style={[styles.findBtnText, !canFindOuting && styles.findBtnTextDisabled]}>
+            Find my outing
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -398,9 +406,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  findBtnDisabled: {
+    backgroundColor: C.pillMuted,
+  },
   findBtnText: {
     fontFamily: F.semi,
     fontSize: 15,
     color: '#FFFFFF',
+  },
+  findBtnTextDisabled: {
+    color: C.textTert,
   },
 });
