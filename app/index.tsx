@@ -30,6 +30,7 @@ import {
 } from 'lucide-react-native';
 import ActiveOutingWarningSheet from './_active-outing-warning-sheet';
 import BottomNav from './_bottom-nav';
+import BuildAroundInfoSheet from './_build-around-info-sheet';
 import { getCatIcon } from './_category-icons';
 import OverallRatingPrompt from './_overall-rating-prompt';
 import StopRatingSheet from './_stop-rating-sheet';
@@ -343,10 +344,9 @@ function ForYouSection() {
 //  BUILD AROUND CARD  (conditional)
 // ─────────────────────────────────────────
 
-function BuildAroundCard() {
-  if (SAVED_PLACE_COUNT < 3) return null;
+function BuildAroundCard({ onPress }: PressHandlerProps) {
   return (
-    <Pressable style={[styles.card, styles.buildCard]}>
+    <Pressable style={[styles.card, styles.buildCard]} onPress={onPress}>
       <View style={styles.buildLeft}>
         <View style={styles.buildRow}>
           <View style={styles.buildIconWrap}>
@@ -613,6 +613,7 @@ export default function HomeScreen() {
 
   const [showFabWarning, setShowFabWarning]         = useState(false);
   const [pendingFabRedirect, setPendingFabRedirect]  = useState(false);
+  const [buildAroundSheetVisible, setBuildAroundSheetVisible] = useState(false);
 
   if (!fontsLoaded && !fontError) return null;
 
@@ -712,8 +713,8 @@ export default function HomeScreen() {
         {/* For You — always shown */}
         <ForYouSection />
 
-        {/* Build Around — shown when user has 3+ saved places */}
-        <BuildAroundCard />
+        {/* Build Around — not-yet-built feature, always shown */}
+        <BuildAroundCard onPress={() => setBuildAroundSheetVisible(true)} />
       </ScrollView>
 
       {/* Bottom nav */}
@@ -726,6 +727,11 @@ export default function HomeScreen() {
             router.push('/outing-questions');
           }
         }}
+      />
+
+      <BuildAroundInfoSheet
+        visible={buildAroundSheetVisible}
+        onDismiss={() => setBuildAroundSheetVisible(false)}
       />
     </View>
   );
