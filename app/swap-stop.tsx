@@ -26,7 +26,7 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { useFonts } from 'expo-font';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { ChevronRight } from 'lucide-react-native';
 import { useState } from 'react';
 import {
   FlatList,
@@ -166,7 +166,7 @@ export default function SwapStopScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           style={styles.backBtn}
         >
-          <ChevronLeft size={22} color={C.textPrimary} />
+          <Text style={styles.cancelText}>Cancel</Text>
         </Pressable>
 
         <View style={styles.headerText}>
@@ -220,13 +220,17 @@ const styles = StyleSheet.create({
     backgroundColor: C.bg,
   },
   backBtn: {
-    width: 36,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
     flexShrink: 0,
     marginTop: 2,
+  },
+  cancelText: {
+    fontFamily: F.semi,
+    fontSize: 15,
+    color: C.textPrimary,
   },
   headerText: {
     flex: 1,
