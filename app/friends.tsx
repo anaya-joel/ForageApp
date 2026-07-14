@@ -18,10 +18,11 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
-import { ChevronRight, Users } from 'lucide-react-native';
+import { ChevronRight, UserPlus, Users } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AddFriendInfoSheet from './_add-friend-info-sheet';
 import BottomNav from './_bottom-nav';
 import DuoPlanInfoSheet from './_duo-plan-info-sheet';
 import { C } from '../data/colors';
@@ -129,6 +130,7 @@ export default function FriendsScreen() {
   const [requests, setRequests] = useState<FriendRequest[]>(INITIAL_REQUESTS);
   const [friends, setFriends] = useState<Friend[]>(INITIAL_FRIENDS);
   const [duoSheetVisible, setDuoSheetVisible] = useState(false);
+  const [addFriendSheetVisible, setAddFriendSheetVisible] = useState(false);
 
   if (!fontsLoaded && !fontError) return null;
 
@@ -155,6 +157,13 @@ export default function FriendsScreen() {
         {/* ── HEADER ── */}
         <View style={styles.header}>
           <Text style={styles.title}>Friends</Text>
+          <Pressable
+            style={styles.addFriendCorner}
+            onPress={() => setAddFriendSheetVisible(true)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <UserPlus size={18} color={C.amber} />
+          </Pressable>
         </View>
 
         {/* ── REQUESTS ── */}
@@ -183,11 +192,6 @@ export default function FriendsScreen() {
             ))}
           </View>
         </View>
-
-        {/* ── ADD FRIEND ── */}
-        <Pressable style={styles.addFriendBtn} onPress={() => {}}>
-          <Text style={styles.addFriendText}>Add Friend</Text>
-        </Pressable>
 
         {/* ── DUO PLANS ── */}
         <Pressable
@@ -218,6 +222,11 @@ export default function FriendsScreen() {
         visible={duoSheetVisible}
         onDismiss={() => setDuoSheetVisible(false)}
       />
+
+      <AddFriendInfoSheet
+        visible={addFriendSheetVisible}
+        onDismiss={() => setAddFriendSheetVisible(false)}
+      />
     </View>
   );
 }
@@ -237,12 +246,23 @@ const styles = StyleSheet.create({
   // ── Header ──
   header: {
     marginBottom: 28,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   title: {
     fontFamily: F.serif,
     fontSize: 32,
     color: C.textPrimary,
     lineHeight: 38,
+  },
+  addFriendCorner: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: C.amberTint,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // ── Sections ──
@@ -353,22 +373,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: C.textTert,
     marginTop: 2,
-  },
-
-  // ── Add Friend button (matches Preferences Save button) ──
-  addFriendBtn: {
-    marginTop: 4,
-    marginBottom: 24,
-    backgroundColor: C.amber,
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addFriendText: {
-    fontFamily: F.semi,
-    fontSize: 15,
-    color: '#FFFFFF',
   },
 
   // ── Duo Plans row (matches ProfileRow) ──
