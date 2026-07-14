@@ -113,9 +113,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     shadowColor: 'rgba(180,95,20,1)',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 2,
   },
   fabGradient: {
     width: '100%',
