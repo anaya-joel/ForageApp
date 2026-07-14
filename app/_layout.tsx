@@ -26,6 +26,9 @@ export default function RootLayout() {
         }}
       />
       <Stack.Screen name="first-plan-reveal" options={{ animation: 'slide_from_bottom' }} />
-    </Stack>
+      <Stack.Screen
+        name="swap-stop"
+        options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+      />
   );
 }
