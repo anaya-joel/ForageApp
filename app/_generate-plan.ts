@@ -311,6 +311,24 @@ function buildVibeTags(vibes: string[], categories: Category[]): string[] {
   return tags.slice(0, 3);
 }
 
+// Determines stop order within a generated plan. Earlier = visited first.
+// Nightlife ranked last on purpose (evening/late-night wind-down); ties
+// (e.g. two nightlife venues) keep their relative order via the sort's
+// stability rather than needing separate handling.
+const CATEGORY_PRIORITY: Record<Category, number> = {
+  'COFFEE & CAFÉS': 0,
+  OUTDOORS: 1,
+  MARKETS: 2,
+  'ARTS & CULTURE': 3,
+  EXPERIENCES: 4,
+  'EAT & DRINK': 5,
+  NIGHTLIFE: 6,
+};
+
+function byCategoryPriority(a: Venue, b: Venue): number {
+  return CATEGORY_PRIORITY[a.category as Category] - CATEGORY_PRIORITY[b.category as Category];
+}
+
 export function generatePlan(inputs: PlanInputs): OutingPlan {
   const requestedDate = inputs.timeOfDay ?? new Date();
   const stopCeiling = getStopCountForTime(requestedDate);
@@ -339,6 +357,11 @@ export function generatePlan(inputs: PlanInputs): OutingPlan {
     const fill = pickWithVariety(openWidened, stopCount - openExact.length);
     selected = [...openExact, ...fill];
   }
+
+  // Array.prototype.sort is spec-guaranteed stable (ES2019+, and Hermes
+  // complies), so same-category venues keep whatever relative order
+  // pickWithVariety gave them instead of being reshuffled here.
+  selected.sort(byCategoryPriority);
 
   const fallbackFired = openExact.length < stopCount;
 
