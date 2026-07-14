@@ -30,5 +30,6 @@ export default function RootLayout() {
         name="swap-stop"
         options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
       />
+    </Stack>
   );
 }
