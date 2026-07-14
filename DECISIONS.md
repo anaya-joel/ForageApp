@@ -26,13 +26,6 @@ with that decision, not yet resolved here. Revisit alongside the
 transport-row fix, or replace with an honest "distance unknown" state, 
 once real place-to-place data exists.
 
-## Known Issue — app-tabs.web.tsx type error
-Pre-existing tsc error: TabTrigger href="/explore" fails type-check because 
-no app/explore.tsx route exists yet (Explore tab not yet built). Unrelated 
-to active screens (home, outing-preview, active-outing). Will likely 
-resolve on its own once Explore tab is built; if app-tabs.web.tsx turns out 
-to be dead scaffold code, delete it instead of fixing the route.
-
 ## Venue Data Model — Consolidated 2026-07-06
 ForYouPlace (app/index.tsx) and CuratedPlace (app/outing-preview.tsx) were 
 two separately-typed, partially-duplicated venue shapes. Merged into a 
@@ -44,13 +37,14 @@ into data/colors.ts to avoid a circular import and stop duplicating hex
 values across files. app/index.tsx, app/outing-preview.tsx, and 
 app/swap-stop.tsx all now import from data/.
 
-## Venue Catalog — Only 14 of 30 Places Built
-data/venues.ts currently holds 14 places. Spec calls for 30 across 7 
-categories. Experiences category has zero entries. Suggestion engine, 
-FAB-flow category filtering, and swap/add flows will all under-deliver 
-until the remaining ~16 places are added. Not a blocker for prototype 
-demo scope, but Scout's plans will look thin/repetitive in category-heavy 
-scenarios (e.g. an all-Experiences request) until this is closed.
+## Venue Catalog — 26 of 30 Places Built
+data/venues.ts currently holds 26 places. Spec calls for 30 across 7 
+categories. Experiences no longer has zero entries (4 now built). 
+Suggestion engine, FAB-flow category filtering, and swap/add flows will 
+still under-deliver until the remaining ~4 places are added. Not a 
+blocker for prototype demo scope, but Scout's plans may still look 
+thin/repetitive in the thinnest categories (Arts & Culture and Nightlife, 
+3 each) until this is closed.
 
 ## Stop List Place Name Font — Not Changed
 Considered switching stop list place names (Scout card, Outing Preview) 
@@ -130,17 +124,30 @@ exist. Duo Plans remains out of scope for v1 (Friends tab). Do not let
 they solve different problems and Duo Plans is a materially larger 
 feature (shared data model + consent flow, not just a UI option).
 
-## Explore / Friends / Profile — Stub Screens Only for July 17 Prototype
-Nav bar wiring (tap → correct screen, correct active state) is in scope 
-for the prototype. Full IA for these tabs (Explore: suggested/saved/
-trending/hidden gems/pre-made outings/events; Friends: list/requests/add/
-duo plans; Profile: history/preferences/stats/drafts/badges/settings) is 
-NOT in scope — all of it is listed as "Not Yet Specified" in the master 
-spec, and building any of it now is real feature design work on tabs 
-already correctly cut from v1, not free navigation wiring. Each tab gets 
-one on-brand, Scout-voiced holding screen (correct fonts/colors, no 
-Lorem Ipsum, one or two lines gesturing at what's coming) — not a blank 
-placeholder, not a built-out sub-navigation.
+## Explore / Friends / Profile — Real Tabs, Not Holding Screens (Updated)
+These three tabs moved past the original "one holding screen per tab" 
+plan and now have working functionality, not placeholders:
+- **Explore**: real category filter chips (wrapped grid, single-select) 
+  wired to a venue grid pulled live from data/venues.ts.
+- **Friends**: requests list with working accept/decline (local state), 
+  a friends list, and a Duo Planning entry point (info sheet) plus an 
+  Add Friend info sheet.
+- **Profile**: real header (user name/email from _user-profile-store.ts) 
+  and navigation rows to Drafts, Outing History, and Preferences.
+
+What's still NOT built within these tabs (each still explicitly a v1 gap, 
+not an oversight):
+- **Explore**: no search or sort — just category filtering. Venue cards 
+  are a local copy of ForYouCard with the heart/save button intentionally 
+  omitted. No saved/trending/hidden-gems/pre-made-outings/events views 
+  from the master spec's fuller Explore IA.
+- **Friends**: "no store, no backend" (per the file's own header comment) 
+  — requests/friends lists are hardcoded seed data, mutated only in local 
+  component state. No real invite flow, no networking/friend-request 
+  backend, nothing persists across an app restart.
+- **Profile**: only 3 rows (Drafts, Outing History, Preferences). No 
+  stats, badges, or settings screen yet — those remain "Not Yet 
+  Specified" per the master spec.
 
 ## Price tier semantics across cost shapes
 
