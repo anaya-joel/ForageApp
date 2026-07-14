@@ -57,6 +57,9 @@ export default function ProfileScreen() {
 
   if (!fontsLoaded && !fontError) return null;
 
+  const userName = getUserName();
+  const userEmail = getUserEmail();
+
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
@@ -69,8 +72,8 @@ export default function ProfileScreen() {
         {/* ── HEADER ── */}
         <View style={styles.header}>
           <Text style={styles.title}>Profile</Text>
-          <Text style={styles.name}>{getUserName()}</Text>
-          <Text style={styles.email}>{getUserEmail()}</Text>
+          {userName ? <Text style={styles.name}>{userName}</Text> : null}
+          {userEmail ? <Text style={styles.email}>{userEmail}</Text> : null}
         </View>
 
         {/* ── ROWS ── */}
