@@ -18,7 +18,7 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
-import { ChevronRight, UserPlus, Users } from 'lucide-react-native';
+import { UserPlus, Users } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -194,15 +194,19 @@ export default function FriendsScreen() {
         </View>
 
         {/* ── DUO PLANS ── */}
-        <Pressable
-          style={[styles.card, styles.duoRow]}
-          onPress={() => setDuoSheetVisible(true)}
-        >
-          <View style={styles.iconCircle}>
-            <Users size={18} color={C.amber} />
+        <Pressable style={styles.card} onPress={() => setDuoSheetVisible(true)}>
+          <View style={styles.duoCardRow}>
+            <View style={styles.iconCircle}>
+              <Users size={18} color={C.amber} />
+            </View>
+            <View style={styles.duoTextBlock}>
+              <Text style={styles.duoTitle}>Duo Planning</Text>
+              <Text style={styles.duoDescription}>Plan an outing together with a friend.</Text>
+            </View>
+            <Pressable style={styles.duoButton} onPress={() => setDuoSheetVisible(true)}>
+              <Text style={styles.duoButtonText}>Plan Together</Text>
+            </Pressable>
           </View>
-          <Text style={styles.duoLabel}>Duo Plans</Text>
-          <ChevronRight size={16} color={C.textTert} />
         </Pressable>
       </ScrollView>
 
@@ -375,7 +379,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // ── Duo Plans row (matches ProfileRow) ──
+  // ── Duo Plans card ──
+  duoCardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 16,
+  },
   iconCircle: {
     width: 36,
     height: 36,
@@ -385,16 +395,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexShrink: 0,
   },
-  duoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 16,
-  },
-  duoLabel: {
+  duoTextBlock: {
     flex: 1,
-    fontFamily: F.semi,
+  },
+  duoTitle: {
+    fontFamily: F.serif,
     fontSize: 15,
     color: C.textPrimary,
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  duoDescription: {
+    fontFamily: F.reg,
+    fontSize: 13,
+    color: C.textSec,
+  },
+  duoButton: {
+    alignSelf: 'center',
+    backgroundColor: C.amber,
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  duoButtonText: {
+    fontFamily: F.semi,
+    fontSize: 12,
+    color: '#FFFFFF',
   },
 });
