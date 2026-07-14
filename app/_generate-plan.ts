@@ -21,10 +21,10 @@ export type PlanInputs = {
 
 export function getStopCountForTime(date: Date): number {
   const hour = date.getHours();
-  if (hour < 15) return 4;
-  if (hour < 18) return 3;
-  if (hour < 21) return 2;
-  return 1;
+  if (hour < 12) return 4;
+  if (hour < 16) return 4;
+  if (hour < 20) return 3;
+  return 3; // ceiling only for 8pm+ — generatePlan degrades this by real venue availability
 }
 
 const BUDGET_RANK: Record<BudgetTier, number> = { Free: 0, '$': 1, '$$': 2, '$$$': 3 };
@@ -33,6 +33,96 @@ function budgetAllows(priceTier: string, budget: BudgetTier): boolean {
   const rank = BUDGET_RANK[priceTier as BudgetTier];
   if (rank === undefined) return false;
   return rank <= BUDGET_RANK[budget];
+}
+
+const DAY_ABBR: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+
+function expandDayRange(spec: string): number[] {
+  if (spec === 'Daily') return [0, 1, 2, 3, 4, 5, 6];
+  const parts = spec.split('–');
+  if (parts.length === 1) {
+    const d = DAY_ABBR[parts[0]];
+    return d === undefined ? [] : [d];
+  }
+  const start = DAY_ABBR[parts[0]];
+  const end = DAY_ABBR[parts[1]];
+  if (start === undefined || end === undefined) return [];
+  const days: number[] = [];
+  let d = start;
+  for (let i = 0; i < 8; i++) {
+    days.push(d);
+    if (d === end) break;
+    d = (d + 1) % 7;
+  }
+  return days;
+}
+
+function parseClockToMinutes(token: string): number | null {
+  const m = token.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i);
+  if (!m) return null;
+  let hour = parseInt(m[1], 10);
+  const minute = m[2] ? parseInt(m[2], 10) : 0;
+  const period = m[3].toLowerCase();
+  if (hour === 12) hour = 0;
+  if (period === 'pm') hour += 12;
+  return hour * 60 + minute;
+}
+
+type HoursClause =
+  | { days: number[]; allDay: true }
+  | { days: number[]; allDay?: false; startMin: number; endMin: number };
+
+function parseClause(clause: string): HoursClause | null {
+  const trimmed = clause.trim();
+  const m = trimmed.match(/^(Daily|[A-Za-z]{3}(?:–[A-Za-z]{3})?)\s+(.+)$/);
+  if (!m) return null;
+  const daySpec = m[1];
+  const timeSpec = m[2].trim();
+  const days = expandDayRange(daySpec);
+  if (days.length === 0) return null;
+
+  if (/^24\s*hours$/i.test(timeSpec)) {
+    return { days, allDay: true };
+  }
+
+  const timeMatch = timeSpec.match(/^(.+?)–(.+)$/);
+  if (!timeMatch) return null;
+  const startMin = parseClockToMinutes(timeMatch[1]);
+  const endMin = parseClockToMinutes(timeMatch[2]);
+  if (startMin === null || endMin === null) return null;
+  return { days, startMin, endMin };
+}
+
+/**
+ * Parses `venue.hours` (freeform, comma-separated day+time clauses) and checks
+ * whether the venue is open at `date`. Fails closed: any clause that doesn't
+ * match a recognized shape (e.g. "dawn to dusk", "varies by show") makes the
+ * whole venue count as unavailable rather than guessing.
+ */
+export function isVenueOpenAt(venue: Venue, date: Date): boolean {
+  const clauses = venue.hours.split(',').map(parseClause);
+  if (clauses.some(c => c === null)) return false;
+
+  const day = date.getDay();
+  const minutesOfDay = date.getHours() * 60 + date.getMinutes();
+  const prevDay = (day + 6) % 7;
+
+  for (const clause of clauses) {
+    if (!clause) continue;
+    if (clause.allDay) {
+      if (clause.days.includes(day)) return true;
+      continue;
+    }
+    const { days, startMin, endMin } = clause;
+    if (endMin > startMin) {
+      if (days.includes(day) && minutesOfDay >= startMin && minutesOfDay < endMin) return true;
+    } else {
+      // wraps past midnight
+      if (days.includes(day) && minutesOfDay >= startMin) return true;
+      if (days.includes(prevDay) && minutesOfDay < endMin) return true;
+    }
+  }
+  return false;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -222,19 +312,35 @@ function buildVibeTags(vibes: string[], categories: Category[]): string[] {
 }
 
 export function generatePlan(inputs: PlanInputs): OutingPlan {
-  const stopCount = getStopCountForTime(inputs.timeOfDay ?? new Date());
+  const requestedDate = inputs.timeOfDay ?? new Date();
+  const stopCeiling = getStopCountForTime(requestedDate);
 
-  const { exact, widened } = selectPool(inputs.categories, inputs.budget, stopCount);
+  const { exact, widened } = selectPool(inputs.categories, inputs.budget, stopCeiling);
 
-  let selected: Venue[];
-  if (exact.length >= stopCount) {
-    selected = pickWithVariety(exact, stopCount);
-  } else {
-    const fill = pickWithVariety(widened, stopCount - exact.length);
-    selected = [...exact, ...fill];
+  const openExact = exact.filter(v => isVenueOpenAt(v, requestedDate));
+  const openWidened = widened.filter(v => isVenueOpenAt(v, requestedDate));
+  const availableCount = openExact.length + openWidened.length;
+
+  if (availableCount === 0) {
+    // Needs an explicit product decision (relax categories vs. a Scout-voiced
+    // empty state) — surfacing loudly instead of guessing or returning an
+    // empty plan.
+    throw new Error(
+      `generatePlan: no venues open for categories [${inputs.categories.join(', ')}] at ${requestedDate.toISOString()} — empty-state handling not yet implemented.`
+    );
   }
 
-  const fallbackFired = exact.length < stopCount;
+  const stopCount = Math.max(1, Math.min(stopCeiling, availableCount));
+
+  let selected: Venue[];
+  if (openExact.length >= stopCount) {
+    selected = pickWithVariety(openExact, stopCount);
+  } else {
+    const fill = pickWithVariety(openWidened, stopCount - openExact.length);
+    selected = [...openExact, ...fill];
+  }
+
+  const fallbackFired = openExact.length < stopCount;
 
   const templates = fallbackFired ? FALLBACK_TEMPLATES : CATEGORY_TEMPLATES[dominantCategory(selected)];
   const name = pickOne(templates.names);
