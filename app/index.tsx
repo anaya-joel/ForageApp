@@ -378,16 +378,15 @@ function OutingDraftCard({ onPress, onViewList, draft }: PressHandlerProps & { o
   return (
     <>
       <Pressable style={[styles.card, styles.draftCard]} onPress={onPress}>
-        {/* Left: clock + text */}
-        <View style={styles.draftLeft}>
-          <View style={styles.clockCircle}>
-            <Clock size={18} color={C.amber} />
-          </View>
-          <View style={styles.draftText}>
-            <Text style={styles.draftLabel}>OUTING DRAFT</Text>
-            <Text style={styles.draftName} numberOfLines={1}>{name}</Text>
-            <Text style={styles.draftMeta}>{dateLabel}  ·  {stopCount} stops</Text>
-          </View>
+        {/* Clock icon — centered against the full card height */}
+        <View style={styles.clockCircle}>
+          <Clock size={18} color={C.amber} />
+        </View>
+        {/* Text block — top-anchored to match Scout's label position */}
+        <View style={styles.draftText}>
+          <Text style={styles.draftLabel}>OUTING DRAFT</Text>
+          <Text style={styles.draftName} numberOfLines={1}>{name}</Text>
+          <Text style={styles.draftMeta}>{dateLabel}  ·  {stopCount} stops</Text>
         </View>
         {/* Right: stop circles */}
         <View style={styles.stopCircles}>
@@ -1093,20 +1092,12 @@ const styles = StyleSheet.create({
 
   // ── Draft Card ──
   draftCard: {
-    padding: 16,
-    paddingBottom: 12,
+    padding: 18,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: 12,
     minHeight: 90,
-  },
-  draftLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-    minWidth: 0,
   },
   clockCircle: {
     width: 36,
@@ -1116,14 +1107,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+    alignSelf: 'center',
   },
   draftText: {
     flex: 1,
     minWidth: 0,
+    alignSelf: 'flex-start',
   },
   draftLabel: {
     fontFamily: F.semi,
     fontSize: 9,
+    lineHeight: 12,
     color: C.amber,
     letterSpacing: 1.4,
     marginBottom: 3,
@@ -1131,18 +1125,21 @@ const styles = StyleSheet.create({
   draftName: {
     fontFamily: F.serif,
     fontSize: 17,
+    lineHeight: 21,
     color: C.textPrimary,
     marginBottom: 3,
   },
   draftMeta: {
     fontFamily: F.reg,
     fontSize: 11,
+    lineHeight: 14,
     color: C.textSec,
   },
   stopCircles: {
     flexDirection: 'row',
     alignItems: 'center',
     flexShrink: 0,
+    alignSelf: 'center',
   },
   draftStopCircle: {
     width: 32,
