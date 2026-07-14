@@ -1,5 +1,5 @@
 import { Redirect, Stack, useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { generatePlan, type PlanInputs } from './_generate-plan';
 import { setScoutSuggestion } from './_outing-store';
 import { getQuizAnswers } from './_quiz-progress-store';
@@ -51,7 +51,15 @@ export default function FirstPlanRevealScreen() {
             budget: '$$',
             timeOfDay: new Date(),
           };
-          const plan = generatePlan(inputs);
+
+          let plan;
+          try {
+            plan = generatePlan(inputs);
+          } catch {
+            Alert.alert('Nothing open right now', "Try again later, or widen what you're looking for.");
+            return;
+          }
+
           setScoutSuggestion(plan);
 
           router.replace('/');

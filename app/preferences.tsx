@@ -17,7 +17,7 @@ import { useFonts } from 'expo-font';
 import { Check, ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCatIcon, getCategoryColor } from './_category-icons';
 import { C } from '../data/colors';
@@ -121,7 +121,15 @@ export default function PreferencesScreen() {
       budget: '$$',
       timeOfDay: new Date(),
     };
-    const plan = generatePlan(inputs);
+
+    let plan;
+    try {
+      plan = generatePlan(inputs);
+    } catch {
+      Alert.alert('Nothing open right now', "Try again later, or widen what you're looking for.");
+      return;
+    }
+
     setScoutSuggestion(plan);
 
     router.back();

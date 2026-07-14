@@ -8,6 +8,7 @@
 
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
+import { Alert } from 'react-native';
 import {
   completeCurrentStop,
   endOuting,
@@ -28,8 +29,12 @@ import { deriveInputsFromPlan } from './outing-preview';
 // than reusing hardcoded or empty values.
 export function regenerateScoutSuggestion(finishedPlan: OutingPlan) {
   const inputs = deriveInputsFromPlan(finishedPlan);
-  const nextPlan = generatePlan(inputs);
-  setScoutSuggestion(nextPlan);
+  try {
+    const nextPlan = generatePlan(inputs);
+    setScoutSuggestion(nextPlan);
+  } catch {
+    Alert.alert('Nothing open right now', "Try again later, or widen what you're looking for.");
+  }
 }
 
 type ActivePrompt = 'none' | 'stop' | 'overall';

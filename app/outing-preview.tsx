@@ -29,6 +29,7 @@ import { F } from '../data/fonts';
 import { VENUES, type Venue } from '../data/venues';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -635,7 +636,16 @@ export default function OutingPreviewScreen() {
   function handleGenerate() {
     setIsRegenerating(true);
     const inputs = deriveInputsFromPlan(plan);
-    const nextPlan = generatePlan(inputs);
+
+    let nextPlan;
+    try {
+      nextPlan = generatePlan(inputs);
+    } catch {
+      setIsRegenerating(false);
+      Alert.alert('Nothing open right now', "Try again later, or widen what you're looking for.");
+      return;
+    }
+
     setPlan(nextPlan);
     setWorkingPlan(nextPlan);
     originalPlanRef.current = nextPlan;
