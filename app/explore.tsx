@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
 
   // ── Header ──
   header: {
-    marginBottom: 20,
+    marginBottom: 28,
   },
   title: {
     fontFamily: F.serif,
