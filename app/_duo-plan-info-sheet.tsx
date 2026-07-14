@@ -92,7 +92,7 @@ export default function DuoPlanInfoSheet({
 
           <Text style={styles.scoutLine}>Duo Plans aren't a thing yet.</Text>
 
-          <Text style={styles.progressLine}>Plan an outing together. Not built yet. Ask me again later.</Text>
+          <Text style={styles.progressLine}>Plan an outing together. Not built yet. Ask me again later. The idea: match your tastes with a friend's and build something you'd both enjoy.</Text>
 
           <Pressable style={styles.gotItBtn} onPress={onDismiss}>
             <Text style={styles.gotItText}>Got it</Text>

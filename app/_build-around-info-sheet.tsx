@@ -91,7 +91,7 @@ export default function BuildAroundInfoSheet({
 
           <Text style={styles.scoutLine}>Building around saved places isn't real yet.</Text>
 
-          <Text style={styles.progressLine}>Turn your saved spots into an outing. Not built yet. Ask me again later.</Text>
+          <Text style={styles.progressLine}>Turn your saved spots into an outing. Not built yet. Ask me again later. The idea: turn the places you've saved into a real outing, automatically.</Text>
 
           <Pressable style={styles.gotItBtn} onPress={onDismiss}>
             <Text style={styles.gotItText}>Got it</Text>
