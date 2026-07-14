@@ -30,6 +30,8 @@ import OverallRatingPrompt from './_overall-rating-prompt';
 import StopRatingPrompt from './_stop-rating-prompt';
 import React, { useEffect, useState } from 'react';
 import {
+  Linking,
+  Platform,
   Pressable,
   ScrollView,
   StatusBar,
@@ -137,6 +139,18 @@ function TransportConnector({ options }: { options: TransportOpt[] }) {
       <View style={styles.transConnLine} />
     </View>
   );
+}
+
+/**
+ * Opens the user's default maps app with a name+neighborhood text search.
+ * Stop/Venue has no lat/lng yet — see DECISIONS.md.
+ */
+function openDirections(stop: { name: string; neighborhood: string }) {
+  const query = encodeURIComponent(`${stop.name}, ${stop.neighborhood}, Washington DC`);
+  const url = Platform.OS === 'ios'
+    ? `https://maps.apple.com/?q=${query}`
+    : `https://www.google.com/maps/search/?api=1&query=${query}`;
+  Linking.openURL(url);
 }
 
 export default function ActiveOutingScreen() {
@@ -305,7 +319,7 @@ const transportOptions: TransportOpt[] = connector ? [
               <Text style={styles.price}>{currentStop.priceTier}</Text>
             </View>
 
-            <Pressable style={[styles.directionsBtn, { alignSelf: 'flex-start' }]} onPress={() => {}}>
+            <Pressable style={[styles.directionsBtn, { alignSelf: 'flex-start' }]} onPress={() => openDirections(currentStop)}>
               <Navigation size={12} color="#FFFFFF" />
               <Text style={styles.directionsBtnText}>Directions</Text>
             </Pressable>
@@ -329,7 +343,7 @@ const transportOptions: TransportOpt[] = connector ? [
                   <Text style={styles.nextUpPlace} numberOfLines={1}>{nextStop.name}</Text>
                 </View>
               </View>
-              <Pressable style={styles.directionsBtn} onPress={() => {}}>
+              <Pressable style={styles.directionsBtn} onPress={() => openDirections(nextStop)}>
                 <Navigation size={12} color="#FFFFFF" />
                 <Text style={styles.directionsBtnText}>Directions</Text>
               </Pressable>
