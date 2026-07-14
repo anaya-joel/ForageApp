@@ -68,6 +68,7 @@ export default function ProfileScreen() {
       >
         {/* ── HEADER ── */}
         <View style={styles.header}>
+          <Text style={styles.title}>Profile</Text>
           <Text style={styles.name}>{getUserName()}</Text>
           <Text style={styles.email}>{getUserEmail()}</Text>
         </View>
@@ -110,6 +111,12 @@ const styles = StyleSheet.create({
   // ── Header ──
   header: {
     marginBottom: 28,
+  },
+  title: {
+    fontFamily: F.serif,
+    fontSize: 32,
+    color: C.textPrimary,
+    lineHeight: 38,
   },
   name: {
     fontFamily: F.serif,
