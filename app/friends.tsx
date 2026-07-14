@@ -44,7 +44,7 @@ const INITIAL_REQUESTS: FriendRequest[] = [
   { id: 'r2', name: 'Marcus Webb' },
 ];
 
-const FRIENDS: Friend[] = [
+const INITIAL_FRIENDS: Friend[] = [
   { id: 'f1', name: 'Dana Ilić',      subtext: '3 outings together' },
   { id: 'f2', name: 'Theo Park',      subtext: '1 outing together' },
   { id: 'f3', name: 'Grace Odei',     subtext: '7 outings together' },
@@ -123,14 +123,23 @@ export default function FriendsScreen() {
     PlusJakartaSans_600SemiBold,
   });
 
-  // Tapping Accept/Decline just removes the request from this local list —
-  // no store write, nothing persists. Purely cosmetic realism.
+  // Accept moves a request into the friends list; Decline just drops it.
+  // Both only mutate local state — no store write, nothing persists
+  // across an app restart.
   const [requests, setRequests] = useState<FriendRequest[]>(INITIAL_REQUESTS);
+  const [friends, setFriends] = useState<Friend[]>(INITIAL_FRIENDS);
   const [duoSheetVisible, setDuoSheetVisible] = useState(false);
 
   if (!fontsLoaded && !fontError) return null;
 
-  function handleRespond(id: string) {
+  function handleAccept(id: string) {
+    const request = requests.find(r => r.id === id);
+    if (!request) return;
+    setRequests(prev => prev.filter(r => r.id !== id));
+    setFriends(prev => [...prev, { id: request.id, name: request.name, subtext: 'No outings yet' }]);
+  }
+
+  function handleDecline(id: string) {
     setRequests(prev => prev.filter(r => r.id !== id));
   }
 
@@ -157,8 +166,8 @@ export default function FriendsScreen() {
                 <RequestRow
                   key={r.id}
                   name={r.name}
-                  onAccept={() => handleRespond(r.id)}
-                  onDecline={() => handleRespond(r.id)}
+                  onAccept={() => handleAccept(r.id)}
+                  onDecline={() => handleDecline(r.id)}
                 />
               ))}
             </View>
@@ -169,7 +178,7 @@ export default function FriendsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>FRIENDS</Text>
           <View style={styles.rowList}>
-            {FRIENDS.map(f => (
+            {friends.map(f => (
               <FriendRow key={f.id} name={f.name} subtext={f.subtext} />
             ))}
           </View>
