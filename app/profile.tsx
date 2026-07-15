@@ -72,8 +72,19 @@ export default function ProfileScreen() {
         {/* ── HEADER ── */}
         <View style={styles.header}>
           <Text style={styles.title}>Profile</Text>
-          {userName ? <Text style={styles.name}>{userName}</Text> : null}
-          {userEmail ? <Text style={styles.email}>{userEmail}</Text> : null}
+          {userName || userEmail ? (
+            <View style={styles.identityRow}>
+              {userName ? (
+                <View style={styles.avatarCircle}>
+                  <Text style={styles.avatarInitial}>{userName.charAt(0).toUpperCase()}</Text>
+                </View>
+              ) : null}
+              <View style={styles.identityText}>
+                {userName ? <Text style={styles.name}>{userName}</Text> : null}
+                {userEmail ? <Text style={styles.email}>{userEmail}</Text> : null}
+              </View>
+            </View>
+          ) : null}
         </View>
 
         {/* ── ROWS ── */}
@@ -121,17 +132,38 @@ const styles = StyleSheet.create({
     color: C.textPrimary,
     lineHeight: 38,
   },
+  identityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 14,
+  },
+  avatarCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: C.amberTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  avatarInitial: {
+    fontFamily: F.semi,
+    fontSize: 16,
+    color: C.amber,
+  },
+  identityText: {
+    gap: 2,
+  },
   name: {
-    fontFamily: F.serif,
-    fontSize: 32,
+    fontFamily: F.semi,
+    fontSize: 17,
     color: C.textPrimary,
-    lineHeight: 38,
   },
   email: {
     fontFamily: F.reg,
     fontSize: 14,
     color: C.textSec,
-    marginTop: 4,
   },
 
   // ── Rows ──
