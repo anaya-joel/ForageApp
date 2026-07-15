@@ -5,6 +5,7 @@ import {
   PlusJakartaSans_600SemiBold,
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { useFonts } from 'expo-font';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import {
   ArrowLeft,
@@ -15,26 +16,7 @@ import {
   MapPin,
   Navigation,
 } from 'lucide-react-native';
-import ActiveOutingWarningSheet from './_active-outing-warning-sheet';
-import BottomNav from './_bottom-nav';
-import BuildAroundInfoSheet from './_build-around-info-sheet';
-import { getCatIcon } from './_category-icons';
-import OverallRatingPrompt from './_overall-rating-prompt';
-import StopRatingSheet from './_stop-rating-sheet';
-import { useStopCompletion } from './_use-stop-completion';
-import { C } from '../data/colors';
-import { F } from '../data/fonts';
-import { VENUES, type Venue } from '../data/venues';
-import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  getScoutSuggestion,
-  getDrafts,
-  getMostRecentDraft,
-  type OutingPlan,
-} from './_outing-store';
-import { getTasteProfileComplete } from './_taste-profile-store';
-import { getUserName } from './_user-profile-store';
 import {
   Animated,
   FlatList,
@@ -49,6 +31,24 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Line, Svg } from 'react-native-svg';
+import { C } from '../data/colors';
+import { F } from '../data/fonts';
+import { VENUES, type Venue } from '../data/venues';
+import ActiveOutingWarningSheet from './_active-outing-warning-sheet';
+import BottomNav from './_bottom-nav';
+import BuildAroundInfoSheet from './_build-around-info-sheet';
+import { getCatIcon } from './_category-icons';
+import {
+  getDrafts,
+  getMostRecentDraft,
+  getScoutSuggestion,
+  type OutingPlan,
+} from './_outing-store';
+import OverallRatingPrompt from './_overall-rating-prompt';
+import StopRatingSheet from './_stop-rating-sheet';
+import { getTasteProfileComplete } from './_taste-profile-store';
+import { useStopCompletion } from './_use-stop-completion';
+import { getUserName } from './_user-profile-store';
 
 SplashScreen.preventAutoHideAsync();
 
