@@ -191,6 +191,28 @@ neighborhood? price?) that hasn't been designed. Don't build until that
 matching logic is specified; a shipped "more like this" with undefined
 similarity logic will look broken even if the UI is correct.
 
+### Place Detail: Hours Shown Inconsistently Across Screens
+`PlaceDetailModal` (outing-preview.tsx) does not show venue hours, while
+`place-detail.tsx` (the detail screen reached from For You/Explore) does.
+This is because `Stop` (app/_outing-store.ts) doesn't carry an `hours`
+field — it's dropped during the Venue-to-Stop conversion in
+`generatePlan`, even though `venue.hours` is read as an input signal during
+generation (via `isVenueOpenAt`), just never copied onto the resulting
+`Stop`. Fixing this would require either extending `Stop` with an `hours`
+field and threading it through `generatePlan`, or doing a live lookup back
+into `VENUES` by `stop.id` at render time in outing-preview.tsx. Deferred,
+not done.
+
+### Explore Venue Cards: Save Only From Detail Screen, Not the Card
+Explore's venue cards (`VenueCard`) have no heart/save button at all,
+unlike Home's `ForYouCard`, which shows one directly on the card.
+`place-detail.tsx`'s detail screen does have a heart button regardless of
+whether it was reached from For You or Explore, so Explore venues can be
+saved, just only from the detail screen, not the card preview. This is an
+intentional inconsistency, not a bug: adding an on-card heart to
+`VenueCard` would be a new feature, not a fix, and was deliberately skipped
+given time constraints.
+
 ### FAB Outing Creation Flow: Question Set Locked, With Deliberate Cuts (2026-07-06)
 The FAB flow is distinct from onboarding: onboarding sets an overall taste
 profile once, while this flow asks in-the-moment questions since preferences
