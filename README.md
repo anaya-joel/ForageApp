@@ -20,7 +20,7 @@ You answer a few questions once, and Scout, a raccoon guide, builds the outing: 
 
 Explore and Profile are fully working. Friends and the outing-builder flow are early, shown here to give a sense of where they're headed.
 
-Watch the full walkthrough: (https://drive.google.com/file/d/1TeQcEl3aEuaUOwUnIz-CkC2ecdJHO0GW/view?usp=sharing)
+Watch the full walkthrough: https://drive.google.com/file/d/1TeQcEl3aEuaUOwUnIz-CkC2ecdJHO0GW/view?usp=sharing
 
 ## Why I built this
 
