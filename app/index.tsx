@@ -112,9 +112,25 @@ function AmberDot({ pulse = false }) {
 /** For You card — 160 × 232 */
 function ForYouCard({ item }: { item: Venue }) {
   const [saved, setSaved] = useState(false);
+  const router = useRouter();
   const CatIcon = getCatIcon(item.category);
   return (
-    <Pressable style={styles.fyCard} onPress={() => {}}>
+    <Pressable
+      style={styles.fyCard}
+      onPress={() => router.push({
+        pathname: '/place-detail',
+        params: {
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          description: item.description,
+          neighborhood: item.neighborhood,
+          priceTier: item.priceTier,
+          hours: item.hours,
+          color: item.color,
+        },
+      })}
+    >
       {/* Photo area */}
       <View style={styles.fyPhoto}>
         {/* Placeholder — swap for <Image> once real venue photos are available */}

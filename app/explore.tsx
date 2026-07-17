@@ -51,9 +51,25 @@ const CATEGORIES = [
 // ─────────────────────────────────────────
 
 function VenueCard({ item }: { item: Venue }) {
+  const router = useRouter();
   const CatIcon = getCatIcon(item.category);
   return (
-    <Pressable style={styles.vCard} onPress={() => {}}>
+    <Pressable
+      style={styles.vCard}
+      onPress={() => router.push({
+        pathname: '/place-detail',
+        params: {
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          description: item.description,
+          neighborhood: item.neighborhood,
+          priceTier: item.priceTier,
+          hours: item.hours,
+          color: item.color,
+        },
+      })}
+    >
       {/* Photo area */}
       <View style={styles.vPhoto}>
         <View style={styles.vPhotoPlaceholder}>
