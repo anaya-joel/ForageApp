@@ -2,7 +2,7 @@
 
 **Forage is a personalized outing planner that turns a short taste quiz into a full, multi-stop plan.**
 
-You answer a few questions once, and Scout, a raccoon guide, builds you a full outing: where to go, what order, and how to get between stops. No searching, no filtering, no deciding. You just show up.
+You answer a few questions once, and Scout, a raccoon guide, builds the outing: where to go, what order, and how to get between stops. No searching, no filtering, no deciding.
 
 > **Where this is right now:** working prototype, solo outings only, DC only. Onboarding, plan generation, and the full active-outing flow all work. Nothing saves once you close the app, there's no login, and stops are ordered by category, not real map distance yet.
 
@@ -10,17 +10,17 @@ You answer a few questions once, and Scout, a raccoon guide, builds you a full o
 
 ## Demo and screenshots
 
-![Scout](./screenshots/Scout.png)
+<img src="./screenshots/Scout.png" width="300" />
 
-![Generated Outing](./screenshots/Generated_Outing.png)
+<img src="./screenshots/Generated_Outing.png" width="450" />
 
-![Active Outing](./screenshots/Active_Outing.png)
+<img src="./screenshots/Active_Outing.png" width="450" />
 
-![Rest of the App](./screenshots/Rest_of_App.png)
+<img src="./screenshots/Rest_of_App.png" width="450" />
 
 Explore and Profile are fully working. Friends and the outing-builder flow are early, shown here to give a sense of where they're headed.
 
-Watch the full walkthrough: [link coming]
+Watch the full walkthrough: (https://drive.google.com/file/d/1TeQcEl3aEuaUOwUnIz-CkC2ecdJHO0GW/view?usp=sharing)
 
 ## Why I built this
 
