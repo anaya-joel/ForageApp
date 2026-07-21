@@ -24,9 +24,7 @@ Watch the full walkthrough: https://drive.google.com/file/d/1TeQcEl3aEuaUOwUnIz-
 
 ## Why I built this
 
-I started spending a lot of time alone at parks, restaurants, markets, and events because I needed it for my mental health.
-
-The more I did it, the more I noticed I kept ending up at the same handful of places. I didn't really know what new spots would fit what I liked, and I didn't want to burn my limited time somewhere I might not enjoy. Searching around long enough to find something new often talked me out of going out at all.
+I started spending a lot of time alone at parks, restaurants, markets, and events because I needed it for my mental health. The more I did it, the more I noticed I kept ending up at the same handful of places. I didn't really know what new spots would fit what I liked, and I didn't want to burn my limited time somewhere I might not enjoy. Searching around long enough to find something new often talked me out of going out at all.
 
 I couldn't find anything that would build a plan for me on the spot, so I built one myself. Washington, DC became the target because it's the closest city to me with a lot of different things packed close together, and because it gets enough visitors that this could also help someone new to a city. I live in a small city in Maryland, with not enough locations to build off of. DC was the right place to test the idea, but it's not the only city it will work in.
 
