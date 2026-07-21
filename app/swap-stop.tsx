@@ -37,12 +37,13 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { VENUES, type Venue } from '../data/venues';
+import type { Venue } from '../data/venues';
 import { C } from '../data/colors';
 import { F } from '../data/fonts';
 import { getCatIcon } from './_category-icons';
 import { getWorkingPlan } from './_outing-store';
 import { setPendingSwap } from './_swap-store';
+import { useVenues } from './_use-venues';
 
 function CandidateRow({
   place,
@@ -128,6 +129,8 @@ export default function SwapStopScreen() {
     travelHint: string;
   }>();
 
+  const { data: venues, isLoading, isError } = useVenues();
+
   if (!fontsLoaded && !fontError) return null;
 
   // Venues already used elsewhere in the plan (including the stop being
@@ -135,7 +138,7 @@ export default function SwapStopScreen() {
   const workingPlan = getWorkingPlan();
   const usedVenueIds = new Set(workingPlan?.stops.map((s) => s.id) ?? []);
 
-  const candidates = VENUES.filter(
+  const candidates = (venues ?? []).filter(
     (p) => p.category === category && !usedVenueIds.has(p.id)
   );
 
@@ -178,7 +181,19 @@ export default function SwapStopScreen() {
       </View>
 
       {/* ── CANDIDATE LIST ── */}
-      {candidates.length === 0 ? (
+      {isLoading ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>
+            Scouting the neighborhood. Hang tight.
+          </Text>
+        </View>
+      ) : isError ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>
+            Scout lost the trail. Try again in a bit.
+          </Text>
+        </View>
+      ) : candidates.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>
             No other options in this category yet.

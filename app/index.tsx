@@ -33,7 +33,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Line, Svg } from 'react-native-svg';
 import { C } from '../data/colors';
 import { F } from '../data/fonts';
-import { VENUES, type Venue } from '../data/venues';
+import type { Venue } from '../data/venues';
 import ActiveOutingWarningSheet from './_active-outing-warning-sheet';
 import BottomNav from './_bottom-nav';
 import BuildAroundInfoSheet from './_build-around-info-sheet';
@@ -48,6 +48,7 @@ import OverallRatingPrompt from './_overall-rating-prompt';
 import StopRatingSheet from './_stop-rating-sheet';
 import { getTasteProfileComplete } from './_taste-profile-store';
 import { useStopCompletion } from './_use-stop-completion';
+import { useVenues } from './_use-venues';
 import { getUserName } from './_user-profile-store';
 
 SplashScreen.preventAutoHideAsync();
@@ -294,20 +295,20 @@ function getLocalDateString(date: Date): string {
 }
 
 /** Picks the day's For You venues once and reuses them for every render/mount that day. */
-function getDailyForYouSelection(): Venue[] {
+function getDailyForYouSelection(venues: Venue[]): Venue[] {
   const today = getLocalDateString(new Date());
   if (forYouCache && forYouCache.date === today) {
-    const byId = new Map(VENUES.map(v => [v.id, v] as const));
+    const byId = new Map(venues.map(v => [v.id, v] as const));
     const cached = forYouCache.venueIds.map(id => byId.get(id)).filter((v): v is Venue => v != null);
     if (cached.length === forYouCache.venueIds.length) return cached;
   }
-  const selection = pickForYouVenues(VENUES, FOR_YOU_COUNT);
+  const selection = pickForYouVenues(venues, FOR_YOU_COUNT);
   forYouCache = { date: today, venueIds: selection.map(v => v.id) };
   return selection;
 }
 
-function ForYouSection() {
-  const items = useMemo(() => getDailyForYouSelection(), []);
+function ForYouSection({ venues }: { venues: Venue[] }) {
+  const items = useMemo(() => getDailyForYouSelection(venues), [venues]);
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -323,7 +324,7 @@ function ForYouSection() {
       </View>
       {expanded ? (
         <View style={styles.fyGrid}>
-          {VENUES.map(item => (
+          {venues.map(item => (
             <ForYouCard key={item.id} item={item} />
           ))}
         </View>
@@ -612,12 +613,35 @@ export default function HomeScreen() {
   }, [fontsLoaded, fontError]);
 
   const stopCompletion = useStopCompletion('');
+  const { data: venues, isLoading, isError } = useVenues();
 
   const [showFabWarning, setShowFabWarning]         = useState(false);
   const [pendingFabRedirect, setPendingFabRedirect]  = useState(false);
   const [buildAroundSheetVisible, setBuildAroundSheetVisible] = useState(false);
 
   if (!fontsLoaded && !fontError) return null;
+
+  if (isLoading) {
+    return (
+      <View style={styles.screen}>
+        <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
+        <View style={styles.loadingState}>
+          <Text style={styles.loadingText}>Scouting the neighborhood. Hang tight.</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.screen}>
+        <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
+        <View style={styles.loadingState}>
+          <Text style={styles.loadingText}>Scout lost the trail. Try again in a bit.</Text>
+        </View>
+      </View>
+    );
+  }
 
   if (stopCompletion.activePrompt === 'overall' && stopCompletion.finishedPlan) {
     return (
@@ -713,7 +737,7 @@ export default function HomeScreen() {
         )}
 
         {/* For You — always shown */}
-        <ForYouSection />
+        <ForYouSection venues={venues ?? []} />
 
         {/* Build Around — not-yet-built feature, always shown */}
         <BuildAroundCard onPress={() => setBuildAroundSheetVisible(true)} />
@@ -749,6 +773,20 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 14,
+  },
+
+  // ── Loading / error state ──
+  loadingState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+  },
+  loadingText: {
+    fontFamily: F.reg,
+    fontSize: 14,
+    color: C.textSec,
+    textAlign: 'center',
   },
 
   // ── Greeting ──
