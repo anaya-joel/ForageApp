@@ -33,7 +33,8 @@ import { getCatIcon } from './_category-icons';
 import { getActiveOuting } from './_outing-store';
 import { C } from '../data/colors';
 import { F } from '../data/fonts';
-import { VENUES, type Venue } from '../data/venues';
+import type { Venue } from '../data/venues';
+import { useVenues } from './_use-venues';
 
 const CATEGORIES = [
   'All',
@@ -112,10 +113,13 @@ export default function ExploreScreen() {
 
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
+  const { data: venues, isLoading, isError } = useVenues();
+
   const filteredVenues = useMemo(() => {
-    if (selectedCategory === 'All') return VENUES;
-    return VENUES.filter(v => v.category === selectedCategory);
-  }, [selectedCategory]);
+    const all = venues ?? [];
+    if (selectedCategory === 'All') return all;
+    return all.filter(v => v.category === selectedCategory);
+  }, [venues, selectedCategory]);
 
   if (!fontsLoaded && !fontError) return null;
 
@@ -150,7 +154,15 @@ export default function ExploreScreen() {
         </View>
 
         {/* ── VENUE GRID ── */}
-        {filteredVenues.length > 0 ? (
+        {isLoading ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>Scouting the neighborhood. Hang tight.</Text>
+          </View>
+        ) : isError ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>Scout lost the trail. Try again in a bit.</Text>
+          </View>
+        ) : filteredVenues.length > 0 ? (
           <View style={styles.vGrid}>
             {filteredVenues.map(item => (
               <VenueCard key={item.id} item={item} />
