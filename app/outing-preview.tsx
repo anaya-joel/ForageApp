@@ -57,6 +57,7 @@ import {
   type TransportMode,
 } from './_outing-store';
 import { consumePendingSwap } from './_swap-store';
+import { useVenues } from './_use-venues';
 
 function getTransportIcon(mode: TransportMode): React.ComponentType<{ size: number; color: string }> {
   if (mode === 'drive')   return Car;
@@ -540,6 +541,8 @@ export default function OutingPreviewScreen() {
   const [showDraftCapModal, setShowDraftCapModal] = useState(false);
   const [addDetailPlace, setAddDetailPlace] = useState<Venue | null>(null);
 
+  const { data: venues, isLoading: venuesLoading, isError: venuesError } = useVenues();
+
   const originalPlanRef = useRef<OutingPlan>(resolveInitialPlan(draftId));
 
   useFocusEffect(
@@ -634,12 +637,13 @@ export default function OutingPreviewScreen() {
   }
 
   function handleGenerate() {
+    if (isRegenerating || venuesLoading) return;
     setIsRegenerating(true);
     const inputs = deriveInputsFromPlan(plan);
 
     let nextPlan;
     try {
-      nextPlan = generatePlan(inputs);
+      nextPlan = generatePlan(inputs, venues ?? []);
     } catch {
       setIsRegenerating(false);
       Alert.alert('Nothing open right now', "Try again later, or widen what you're looking for.");
@@ -872,9 +876,9 @@ export default function OutingPreviewScreen() {
             </Pressable>
           )}
           <Pressable
-            style={[styles.actionPill, isRegenerating && { opacity: 0.5 }]}
+            style={[styles.actionPill, (isRegenerating || venuesLoading) && { opacity: 0.5 }]}
             onPress={handleGenerate}
-            disabled={isRegenerating}
+            disabled={isRegenerating || venuesLoading}
           >
             <Text style={styles.secondaryLink}>Generate new outing</Text>
           </Pressable>
@@ -884,6 +888,12 @@ export default function OutingPreviewScreen() {
             </Pressable>
           )}
         </View>
+
+        {venuesError && (
+          <Text style={styles.venuesErrorText}>
+            I'm having trouble finding venues right now — give it another moment and try again.
+          </Text>
+        )}
       </View>
 
       {/* ── DIRTY BACK SHEET ── */}
@@ -1208,6 +1218,13 @@ const styles = StyleSheet.create({
     fontFamily: F.semi,
     fontSize: 12,
     color: C.textTert,
+  },
+  venuesErrorText: {
+    fontFamily: F.reg,
+    fontSize: 12,
+    color: C.textSec,
+    textAlign: 'center',
+    marginTop: 10,
   },
 
   // ── Dirty back sheet ──

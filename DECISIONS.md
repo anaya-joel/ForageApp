@@ -348,3 +348,7 @@ committed to this repo.
 This is resolved, not an open question: these were external documents used
 during design and development that were never added to version control, and
 they won't be added going forward. Anywhere this file cites "the spec" or "the original spec," that's a reference to that external, untracked material, not to a file a reader of this repo can open. Entries in this file are meant to be self-contained records of what was decided and why; they don't require the original spec documents to make sense.
+
+### Generate New Outing: Rapid Double-Tap Not Fully Guarded (2026-07-21)
+The "Generate new outing" button in outing-preview.tsx guards against re-entry via React state (`isRegenerating`) rather than a ref. State updates are async/batched, so a genuine rapid double-tap can occasionally fire `handleGenerate()` twice before the first tap's state update commits — the `disabled` prop only reliably blocks a *second, separate* tap made after the button visually disables. Left as-is: `generatePlan()` is synchronous and purely local (no network call, no database write), so the worst case is a harmless double-computation and a visual flicker, not data corruption or a 
+duplicate write. A proper fix would use a `useRef` boolean instead of state for synchronous re-entry protection — low priority, revisit as a standalone polish pass if it ever becomes user-visible.
