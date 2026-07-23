@@ -46,6 +46,7 @@ import {
 } from './_outing-store';
 import OverallRatingPrompt from './_overall-rating-prompt';
 import StopRatingSheet from './_stop-rating-sheet';
+import { getCurrentSession } from './_auth-store';
 import { getTasteProfileComplete } from './_taste-profile-store';
 import { useStopCompletion } from './_use-stop-completion';
 import { useVenues } from './_use-venues';
@@ -584,9 +585,28 @@ function getGreeting(name: string) {
 }
 
 export default function HomeScreen() {
-  if (!getTasteProfileComplete()) {
-    return <Redirect href="/welcome" />;
-  }
+  // Hooks are hoisted unconditionally above every early return in this
+  // component (including the pre-existing taste-profile gate below), since
+  // the session check below resolves asynchronously via useEffect/setState
+  // within this same mounted instance — unlike the old single early-return
+  // gate (evaluated fresh only on mount), a state-driven gate placed before
+  // other hooks would call a different number of hooks between the
+  // "checking" render and the "resolved" render and crash.
+  const [sessionChecked, setSessionChecked] = useState(false);
+  const [hasSession, setHasSession]         = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getCurrentSession().then(({ session }) => {
+      if (cancelled) return;
+      console.log('[home] getCurrentSession resolved', { hasSession: session !== null, userId: session?.user?.id });
+      setHasSession(session !== null);
+      setSessionChecked(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const [, setRefreshTick] = useState(0);
 
@@ -612,12 +632,32 @@ export default function HomeScreen() {
     }
   }, [fontsLoaded, fontError]);
 
-  const stopCompletion = useStopCompletion('');
   const { data: venues, isLoading, isError } = useVenues();
+  const stopCompletion = useStopCompletion('', venues ?? []);
 
   const [showFabWarning, setShowFabWarning]         = useState(false);
   const [pendingFabRedirect, setPendingFabRedirect]  = useState(false);
   const [buildAroundSheetVisible, setBuildAroundSheetVisible] = useState(false);
+
+  if (!sessionChecked) {
+    return (
+      <View style={styles.screen}>
+        <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
+        <View style={styles.loadingState}>
+          <Text style={styles.loadingText}>Scouting the neighborhood. Hang tight.</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (!hasSession) {
+    return <Redirect href="/welcome" />;
+  }
+
+  console.log('[home] getTasteProfileComplete()', getTasteProfileComplete());
+  if (!getTasteProfileComplete()) {
+    return <Redirect href="/welcome" />;
+  }
 
   if (!fontsLoaded && !fontError) return null;
 
