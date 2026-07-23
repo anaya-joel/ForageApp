@@ -21,16 +21,17 @@ import {
 import { addHistoryEntry } from './_outing-history-store';
 import { generatePlan } from './_generate-plan';
 import { deriveInputsFromPlan } from './outing-preview';
+import type { Venue } from '../data/venues';
 
 // Regenerate the home screen's Scout suggestion so it doesn't just keep
 // showing the outing that was finished/ended. There's no taste-profile
 // store yet, so this derives inputs from the just-completed plan itself
 // (same helper the "Regenerate" button in outing-preview.tsx uses) rather
 // than reusing hardcoded or empty values.
-export function regenerateScoutSuggestion(finishedPlan: OutingPlan) {
+export function regenerateScoutSuggestion(finishedPlan: OutingPlan, venues: Venue[]) {
   const inputs = deriveInputsFromPlan(finishedPlan);
   try {
-    const nextPlan = generatePlan(inputs);
+    const nextPlan = generatePlan(inputs, venues);
     setScoutSuggestion(nextPlan);
   } catch {
     Alert.alert('Nothing open right now', "Try again later, or widen what you're looking for.");
@@ -42,7 +43,7 @@ type ActivePrompt = 'none' | 'stop' | 'overall';
 // `outingId` is accepted for API shape (mirroring the id props the rating
 // prompts already take) but isn't used to select data yet — the store only
 // ever tracks a single active outing via getActiveOuting().
-export function useStopCompletion(outingId: string) {
+export function useStopCompletion(outingId: string, venues: Venue[]) {
   const [plan, setPlan] = useState<OutingPlan | null>(() => getActiveOuting());
 
   // Rating overlay state — 'stop' shows after every "Complete Stop" press,
@@ -110,7 +111,7 @@ export function useStopCompletion(outingId: string) {
   // before extraction.
   function finishOuting() {
     if (finishedPlan) {
-      regenerateScoutSuggestion(finishedPlan);
+      regenerateScoutSuggestion(finishedPlan, venues);
       addHistoryEntry({
         id: finishedPlan.id,
         name: finishedPlan.name,

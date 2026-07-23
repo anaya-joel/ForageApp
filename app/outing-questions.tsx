@@ -20,6 +20,7 @@ import { C } from '../data/colors';
 import { F } from '../data/fonts';
 import { generatePlan, type BudgetTier, type Category, type PlanInputs } from './_generate-plan';
 import { setWorkingPlan } from './_outing-store';
+import { useVenues } from './_use-venues';
 
 const CATEGORIES: Category[] = [
   'EAT & DRINK',
@@ -73,9 +74,11 @@ export default function OutingQuestionsScreen() {
   const [selectedBudget, setSelectedBudget]         = useState<BudgetTier>('$$');
   const [selectedVibes, setSelectedVibes]           = useState<string[]>([]);
 
+  const { data: venues, isLoading, isError } = useVenues();
+
   if (!fontsLoaded && !fontError) return null;
 
-  const canFindOuting = selectedCategories.length > 0;
+  const canFindOuting = selectedCategories.length > 0 && !isLoading;
 
   function toggleCategory(cat: Category) {
     setSelectedCategories((prev) =>
@@ -99,7 +102,7 @@ export default function OutingQuestionsScreen() {
 
     let plan;
     try {
-      plan = generatePlan(inputs);
+      plan = generatePlan(inputs, venues ?? []);
     } catch {
       Alert.alert('Nothing open right now', "Try again later, or widen what you're looking for.");
       return;
@@ -208,6 +211,11 @@ export default function OutingQuestionsScreen() {
 
       {/* ── FIXED BOTTOM CTA ── */}
       <View style={[styles.bottomCTA, { paddingBottom: insets.bottom + 12 }]}>
+        {isError && (
+          <Text style={styles.venuesErrorText}>
+            I'm having trouble finding venues right now — give it another moment and try again.
+          </Text>
+        )}
         <Pressable
           style={[styles.findBtn, !canFindOuting && styles.findBtnDisabled]}
           onPress={handleFindOuting}
@@ -416,5 +424,12 @@ const styles = StyleSheet.create({
   },
   findBtnTextDisabled: {
     color: C.textTert,
+  },
+  venuesErrorText: {
+    fontFamily: F.reg,
+    fontSize: 12,
+    color: C.textSec,
+    textAlign: 'center',
+    marginBottom: 8,
   },
 });

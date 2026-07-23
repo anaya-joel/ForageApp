@@ -1,4 +1,4 @@
-import { VENUES, type Venue } from '../data/venues';
+import type { Venue } from '../data/venues';
 import { createStopInstanceId, type OutingPlan, type Stop } from './_outing-store';
 
 export type Category =
@@ -160,22 +160,23 @@ function pickWithVariety(pool: Venue[], count: number): Venue[] {
  * never lost when the pool has to widen to fill remaining stops.
  */
 function selectPool(
+  venues: Venue[],
   categories: Category[],
   budget: BudgetTier,
   stopCount: number
 ): { exact: Venue[]; widened: Venue[] } {
-  const exact = VENUES.filter(
+  const exact = venues.filter(
     v => categories.includes(v.category as Category) && budgetAllows(v.priceTier, budget)
   );
   if (exact.length >= stopCount) return { exact, widened: [] };
 
   const exactIds = new Set(exact.map(v => v.id));
-  const byBudgetOnly = VENUES.filter(v => budgetAllows(v.priceTier, budget));
+  const byBudgetOnly = venues.filter(v => budgetAllows(v.priceTier, budget));
   if (byBudgetOnly.length >= stopCount) {
     return { exact, widened: byBudgetOnly.filter(v => !exactIds.has(v.id)) };
   }
 
-  return { exact, widened: VENUES.filter(v => !exactIds.has(v.id)) };
+  return { exact, widened: venues.filter(v => !exactIds.has(v.id)) };
 }
 
 const CATEGORY_TEMPLATES: Record<Category, { names: string[]; captions: string[] }> = {
@@ -329,11 +330,11 @@ function byCategoryPriority(a: Venue, b: Venue): number {
   return CATEGORY_PRIORITY[a.category as Category] - CATEGORY_PRIORITY[b.category as Category];
 }
 
-export function generatePlan(inputs: PlanInputs): OutingPlan {
+export function generatePlan(inputs: PlanInputs, venues: Venue[]): OutingPlan {
   const requestedDate = inputs.timeOfDay ?? new Date();
   const stopCeiling = getStopCountForTime(requestedDate);
 
-  const { exact, widened } = selectPool(inputs.categories, inputs.budget, stopCeiling);
+  const { exact, widened } = selectPool(venues, inputs.categories, inputs.budget, stopCeiling);
 
   const openExact = exact.filter(v => isVenueOpenAt(v, requestedDate));
   const openWidened = widened.filter(v => isVenueOpenAt(v, requestedDate));

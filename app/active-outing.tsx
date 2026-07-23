@@ -13,6 +13,7 @@ import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
 import { endOuting } from './_outing-store';
 import { regenerateScoutSuggestion, useStopCompletion } from './_use-stop-completion';
+import { useVenues } from './_use-venues';
 import {
   ArrowLeft,
   Bus,
@@ -164,6 +165,7 @@ export default function ActiveOutingScreen() {
     PlusJakartaSans_600SemiBold,
   });
 
+  const { data: venues } = useVenues();
   const {
     plan,
     currentStop,
@@ -176,7 +178,7 @@ export default function ActiveOutingScreen() {
     handleEndOuting,
     dismissStopPrompt,
     finishOuting,
-  } = useStopCompletion('');
+  } = useStopCompletion('', venues ?? []);
   const [savedStopIds, setSavedStopIds] = useState<Set<string>>(new Set());
   const [showEndConfirm, setShowEndConfirm] = useState(false);
 
@@ -191,7 +193,7 @@ useEffect(() => {
 useEffect(() => {
   if (!plan) return;
   if (!currentStop) {
-    regenerateScoutSuggestion(plan);
+    regenerateScoutSuggestion(plan, venues ?? []);
     endOuting();
     router.replace('/');
   }

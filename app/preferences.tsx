@@ -25,6 +25,7 @@ import { F } from '../data/fonts';
 import { generatePlan, type Category, type PlanInputs } from './_generate-plan';
 import { setScoutSuggestion } from './_outing-store';
 import { getTasteProfile, setTasteProfile } from './_taste-profile-store';
+import { useVenues } from './_use-venues';
 
 const ALL_CATEGORIES: Category[] = [
   'COFFEE & CAFÉS',
@@ -89,9 +90,11 @@ export default function PreferencesScreen() {
   const [profile] = useState(() => getTasteProfile());
   const [selected, setSelected] = useState<Category[]>(() => profile?.categories ?? []);
 
+  const { data: venues, isLoading: venuesLoading } = useVenues();
+
   if (!fontsLoaded && !fontError) return null;
 
-  const canSave = selected.length === REQUIRED_COUNT;
+  const canSave = selected.length === REQUIRED_COUNT && !venuesLoading;
 
   function toggleCategory(category: Category) {
     setSelected(prev => {
@@ -124,7 +127,7 @@ export default function PreferencesScreen() {
 
     let plan;
     try {
-      plan = generatePlan(inputs);
+      plan = generatePlan(inputs, venues ?? []);
     } catch {
       Alert.alert('Nothing open right now', "Try again later, or widen what you're looking for.");
       return;
