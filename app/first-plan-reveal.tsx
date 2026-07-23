@@ -9,6 +9,8 @@ import {
   setTasteProfileComplete,
   type QuizAnswers,
 } from './_taste-profile-store';
+import { useSaveTasteProfile } from './_use-taste-profile';
+import { useVenues } from './_use-venues';
 
 function hasAllAnswers(answers: Partial<QuizAnswers>): answers is QuizAnswers {
   return (
@@ -23,6 +25,8 @@ function hasAllAnswers(answers: Partial<QuizAnswers>): answers is QuizAnswers {
 export default function FirstPlanRevealScreen() {
   const router = useRouter();
   const answers = getQuizAnswers();
+  const { data: venues, isLoading: venuesLoading } = useVenues();
+  const saveTasteProfile = useSaveTasteProfile();
 
   if (!hasAllAnswers(answers)) {
     return <Redirect href="/welcome" />;
@@ -39,34 +43,52 @@ export default function FirstPlanRevealScreen() {
         Categories: {result.categories.join(', ')}{'\n'}
         Vibes: {result.vibes.join(', ')}
       </Text>
-      <Pressable
-        style={styles.button}
-        onPress={() => {
-          setTasteProfile(result);
-          setTasteProfileComplete(true);
+      {venuesLoading ? (
+        <Text style={styles.debug}>Scouting out places for you — one sec...</Text>
+      ) : (
+        <Pressable
+          style={styles.button}
+          onPress={async () => {
+            setTasteProfile(result);
+            setTasteProfileComplete(true);
 
-          const inputs: PlanInputs = {
-            categories: result.categories,
-            vibes: result.vibes,
-            budget: '$$',
-            timeOfDay: new Date(),
-          };
+            try {
+              await saveTasteProfile.mutateAsync({
+                categories: result.categories,
+                vibes: result.vibes,
+                quizAnswers: answers,
+              });
+            } catch {
+              Alert.alert(
+                'Could not save your taste profile',
+                'Check your connection and try again.'
+              );
+              return;
+            }
 
-          let plan;
-          try {
-            plan = generatePlan(inputs);
-          } catch {
-            Alert.alert('Nothing open right now', "Try again later, or widen what you're looking for.");
-            return;
-          }
+            const inputs: PlanInputs = {
+              categories: result.categories,
+              vibes: result.vibes,
+              budget: '$$',
+              timeOfDay: new Date(),
+            };
 
-          setScoutSuggestion(plan);
+            let plan;
+            try {
+              plan = generatePlan(inputs, venues ?? []);
+            } catch {
+              Alert.alert('Nothing open right now', "Try again later, or widen what you're looking for.");
+              return;
+            }
 
-          router.replace('/');
-        }}
-      >
-        <Text style={styles.buttonText}>Done</Text>
-      </Pressable>
+            setScoutSuggestion(plan);
+
+            router.replace('/');
+          }}
+        >
+          <Text style={styles.buttonText}>Done</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
