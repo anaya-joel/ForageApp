@@ -352,3 +352,11 @@ they won't be added going forward. Anywhere this file cites "the spec" or "the o
 ### Generate New Outing: Rapid Double-Tap Not Fully Guarded (2026-07-21)
 The "Generate new outing" button in outing-preview.tsx guards against re-entry via React state (`isRegenerating`) rather than a ref. State updates are async/batched, so a genuine rapid double-tap can occasionally fire `handleGenerate()` twice before the first tap's state update commits — the `disabled` prop only reliably blocks a *second, separate* tap made after the button visually disables. Left as-is: `generatePlan()` is synchronous and purely local (no network call, no database write), so the worst case is a harmless double-computation and a visual flicker, not data corruption or a 
 duplicate write. A proper fix would use a `useRef` boolean instead of state for synchronous re-entry protection — low priority, revisit as a standalone polish pass if it ever becomes user-visible.
+
+### Date of Birth Entry: Plain Text Field, Not a Native Picker (2026-07-22)
+Signup collects date of birth via a YYYY-MM-DD text field rather than a native date 
+picker. Neither @react-native-community/datetimepicker (not installed) nor @expo/ui's 
+native picker (iOS/Android only, no web support) offer a cross-platform solution 
+today. Validation (format + real-date check via UTC round-trip + 17+ age floor) is 
+enforced in code regardless of input method. Revisit if a proper cross-platform picker 
+becomes available, or if web support is dropped as a target.
