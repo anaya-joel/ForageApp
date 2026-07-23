@@ -35,6 +35,8 @@ export default function RootLayout() {
           options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
         />
         <Stack.Screen name="place-detail" options={{ animation: 'default' }} />
+        <Stack.Screen name="signin" options={{ gestureEnabled: false }} />
+        <Stack.Screen name="otp-verify" options={{ gestureEnabled: false }} />
       </Stack>
     </QueryClientProvider>
   );
