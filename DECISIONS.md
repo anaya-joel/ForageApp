@@ -360,3 +360,24 @@ native picker (iOS/Android only, no web support) offer a cross-platform solution
 today. Validation (format + real-date check via UTC round-trip + 17+ age floor) is 
 enforced in code regardless of input method. Revisit if a proper cross-platform picker 
 becomes available, or if web support is dropped as a target.
+
+### Module-Variable Stores Don't Trigger Re-Renders on Their Own (2026-07-23)
+`_outing-store.ts` (and by extension `_taste-profile-store.ts`, `_quiz-progress-store.ts`,
+`_user-profile-store.ts`, `_swap-store.ts`) are plain module-level `let` variables with
+getter/setter functions, not React state. Writing to them (e.g. `setScoutSuggestion(plan)`)
+does NOT trigger a re-render in any component that reads the corresponding getter
+(`getScoutSuggestion()`) in its JSX — React has no way to know the value changed.
+
+This caused a real bug: Home screen's mount-time effect regenerated Scout's Pick from
+the live taste profile and called `setScoutSuggestion()`, but the first paint had
+already read the stale value via `getScoutSuggestion()` earlier in the same render.
+The fix required also mirroring the fresh value into real `useState` 
+(`regeneratedPlan`) and preferring that in the JSX, specifically so the state change
+itself triggers the re-render.
+
+**Anywhere a module-variable store is written to from an effect/async callback and
+read directly in JSX, this same staleness bug is possible** — the write succeeds,
+the data is correct, but the screen won't reflect it until something else happens to
+trigger a re-render (tab switch, unrelated state change). Worth checking for this
+pattern specifically when building drafts/ratings/outing-history against Supabase,
+since those still follow the same module-variable pattern today.
