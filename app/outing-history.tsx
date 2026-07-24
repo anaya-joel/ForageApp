@@ -19,9 +19,9 @@ import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '../data/colors';
 import { F } from '../data/fonts';
-import { getHistoryEntries, type HistoryEntry } from './_outing-history-store';
+import { useOutingHistory, type OutingHistoryEntry } from './_use-outing-history';
 
-function HistoryRow({ entry }: { entry: HistoryEntry }) {
+function HistoryRow({ entry }: { entry: OutingHistoryEntry }) {
   const stopCount  = entry.stops.length;
   const stopColors = entry.stops.map(s => s.color).slice(0, 3);
   const extraStops = Math.max(0, entry.stops.length - 3);
@@ -74,7 +74,7 @@ export default function OutingHistoryScreen() {
     PlusJakartaSans_600SemiBold,
   });
 
-  const entries = getHistoryEntries();
+  const { data: entries, isLoading, isError } = useOutingHistory();
 
   if (!fontsLoaded && !fontError) return null;
 
@@ -97,8 +97,16 @@ export default function OutingHistoryScreen() {
         </View>
       </View>
 
-      {/* ── LIST / EMPTY STATE ── */}
-      {entries.length === 0 ? (
+      {/* ── LIST / LOADING / ERROR / EMPTY STATE ── */}
+      {isLoading ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyLine}>Scouting the neighborhood. Hang tight.</Text>
+        </View>
+      ) : isError ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyLine}>Scout lost the trail. Try again in a bit.</Text>
+        </View>
+      ) : !entries || entries.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyLine}>Nothing here yet. That's fixable.</Text>
         </View>

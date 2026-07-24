@@ -18,7 +18,7 @@ import {
   type OutingPlan,
   type Stop,
 } from './_outing-store';
-import { addHistoryEntry } from './_outing-history-store';
+import { useAddHistoryEntry, type OutingStatus } from './_use-outing-history';
 import { generatePlan } from './_generate-plan';
 import { deriveInputsFromPlan } from './outing-preview';
 import type { Venue } from '../data/venues';
@@ -55,6 +55,15 @@ export function useStopCompletion(outingId: string, venues: Venue[]) {
   const [activePrompt, setActivePrompt] = useState<ActivePrompt>('none');
   const [ratedStop, setRatedStop]       = useState<Stop | null>(null);
   const [finishedPlan, setFinishedPlan] = useState<OutingPlan | null>(null);
+  // Set alongside finishedPlan, at the same moment — 'completed' only when the
+  // final stop was actually completed (dismissStopPrompt's final-stop branch);
+  // 'partial' for every "End outing" early-exit. currentStopIndex alone can't
+  // disambiguate these: the final-stop-completion branch never calls
+  // completeCurrentStop(), so it leaves currentStopIndex at stops.length - 1 —
+  // identical to what an early end on that same last stop would leave behind.
+  const [finishStatus, setFinishStatus] = useState<OutingStatus>('completed');
+
+  const addHistoryEntryMutation = useAddHistoryEntry();
 
   useFocusEffect(
     useCallback(() => {
@@ -90,12 +99,14 @@ export function useStopCompletion(outingId: string, venues: Venue[]) {
   // then goes home (future prompt for the confirmation itself).
   function handleEndOuting() {
     setFinishedPlan(getActiveOuting());
+    setFinishStatus('partial');
     setActivePrompt('overall');
   }
 
   function dismissStopPrompt() {
     if (isFinalStop) {
       setFinishedPlan(plan);
+      setFinishStatus('completed');
       setActivePrompt('overall');
       setRatedStop(null);
       return;
@@ -112,12 +123,23 @@ export function useStopCompletion(outingId: string, venues: Venue[]) {
   function finishOuting() {
     if (finishedPlan) {
       regenerateScoutSuggestion(finishedPlan, venues);
-      addHistoryEntry({
+      // Partial (early-ended) outings only recorded stops up through the one
+      // in progress when "End outing" was tapped — the rest were never
+      // visited. Full completions keep every stop, including the last one
+      // (see the finishStatus comment above for why currentStopIndex can't
+      // be used to tell these apart on its own).
+      const completedStops = finishStatus === 'completed'
+        ? finishedPlan.stops
+        : finishedPlan.stops.slice(0, finishedPlan.currentStopIndex);
+
+      addHistoryEntryMutation.mutate({
         id: finishedPlan.id,
         name: finishedPlan.name,
-        startTime: finishedPlan.startTime,
-        stops: finishedPlan.stops,
+        caption: finishedPlan.caption,
         vibeTags: finishedPlan.vibeTags,
+        stops: completedStops,
+        status: finishStatus,
+        startTime: finishedPlan.startTime,
       });
     }
     endOuting();
