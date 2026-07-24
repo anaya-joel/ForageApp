@@ -16,7 +16,7 @@ import {
 import { useFonts } from 'expo-font';
 import { Check, ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCatIcon, getCategoryColor } from './_category-icons';
@@ -24,7 +24,8 @@ import { C } from '../data/colors';
 import { F } from '../data/fonts';
 import { generatePlan, type Category, type PlanInputs } from './_generate-plan';
 import { setScoutSuggestion } from './_outing-store';
-import { getTasteProfile, setTasteProfile } from './_taste-profile-store';
+import { setTasteProfile, type QuizAnswers } from './_taste-profile-store';
+import { useSaveTasteProfile, useTasteProfile } from './_use-taste-profile';
 import { useVenues } from './_use-venues';
 
 const ALL_CATEGORIES: Category[] = [
@@ -87,8 +88,16 @@ export default function PreferencesScreen() {
     PlusJakartaSans_600SemiBold,
   });
 
-  const [profile] = useState(() => getTasteProfile());
-  const [selected, setSelected] = useState<Category[]>(() => profile?.categories ?? []);
+  const { data: tasteProfileData, isLoading: tasteProfileLoading } = useTasteProfile();
+  const saveTasteProfile = useSaveTasteProfile();
+
+  const [selected, setSelected] = useState<Category[]>([]);
+
+  useEffect(() => {
+    if (tasteProfileData?.profile) {
+      setSelected(tasteProfileData.profile.categories);
+    }
+  }, [tasteProfileData?.profile]);
 
   const { data: venues, isLoading: venuesLoading } = useVenues();
 
@@ -110,13 +119,24 @@ export default function PreferencesScreen() {
     });
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!canSave) return;
 
     const categories = selected as [Category, Category, Category];
-    const vibes = profile?.vibes ?? [];
+    const vibes = tasteProfileData?.profile?.vibes ?? [];
 
     setTasteProfile({ categories, vibes });
+
+    try {
+      await saveTasteProfile.mutateAsync({
+        categories,
+        vibes,
+        quizAnswers: tasteProfileData?.quizAnswers as QuizAnswers,
+      });
+    } catch {
+      Alert.alert('Could not save your preferences', 'Check your connection and try again.');
+      return;
+    }
 
     const inputs: PlanInputs = {
       categories,
@@ -166,16 +186,22 @@ export default function PreferencesScreen() {
           Pick {REQUIRED_COUNT} categories ({selected.length}/{REQUIRED_COUNT})
         </Text>
 
-        <View style={styles.chipGrid}>
-          {ALL_CATEGORIES.map(category => (
-            <CategoryChip
-              key={category}
-              category={category}
-              selected={selected.includes(category)}
-              onPress={() => toggleCategory(category)}
-            />
-          ))}
-        </View>
+        {tasteProfileLoading ? (
+          <View style={styles.loadingState}>
+            <Text style={styles.loadingText}>Loading your preferences...</Text>
+          </View>
+        ) : (
+          <View style={styles.chipGrid}>
+            {ALL_CATEGORIES.map(category => (
+              <CategoryChip
+                key={category}
+                category={category}
+                selected={selected.includes(category)}
+                onPress={() => toggleCategory(category)}
+              />
+            ))}
+          </View>
+        )}
 
         <Pressable
           style={[styles.saveBtn, !canSave && styles.saveBtnDisabled]}
@@ -238,6 +264,17 @@ const styles = StyleSheet.create({
     color: C.textSec,
     letterSpacing: 0.4,
     marginBottom: 14,
+  },
+
+  // ── Loading ──
+  loadingState: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontFamily: F.reg,
+    fontSize: 14,
+    color: C.textSec,
   },
 
   // ── Chip grid ──
