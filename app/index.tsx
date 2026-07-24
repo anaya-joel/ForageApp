@@ -35,6 +35,7 @@ import { C } from '../data/colors';
 import { F } from '../data/fonts';
 import type { Venue } from '../data/venues';
 import ActiveOutingWarningSheet from './_active-outing-warning-sheet';
+import { getCurrentSession } from './_auth-store';
 import BottomNav from './_bottom-nav';
 import BuildAroundInfoSheet from './_build-around-info-sheet';
 import { getCatIcon } from './_category-icons';
@@ -48,7 +49,6 @@ import {
 } from './_outing-store';
 import OverallRatingPrompt from './_overall-rating-prompt';
 import StopRatingSheet from './_stop-rating-sheet';
-import { getCurrentSession } from './_auth-store';
 import { useStopCompletion } from './_use-stop-completion';
 import { useTasteProfile } from './_use-taste-profile';
 import { useVenues } from './_use-venues';
