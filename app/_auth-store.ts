@@ -11,7 +11,7 @@ import { supabase } from '../lib/supabase';
 
 export type OtpRequestResult = { error: string | null };
 
-export type VerifyOtpResult = { error: string | null; isNewUser: boolean };
+export type VerifyOtpResult = { error: string | null; isNewUser: boolean; userId: string | null };
 
 export type CreateUserProfileResult = { error: string | null };
 
@@ -78,10 +78,10 @@ export async function verifyOtp(email: string, token: string): Promise<VerifyOtp
   const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
 
   if (error) {
-    return { error: error.message, isNewUser: false };
+    return { error: error.message, isNewUser: false, userId: null };
   }
   if (!data.session) {
-    return { error: 'Verification succeeded but no session was returned.', isNewUser: false };
+    return { error: 'Verification succeeded but no session was returned.', isNewUser: false, userId: null };
   }
 
   const { data: existingUser, error: lookupError } = await supabase
@@ -91,10 +91,10 @@ export async function verifyOtp(email: string, token: string): Promise<VerifyOtp
     .maybeSingle();
 
   if (lookupError) {
-    return { error: lookupError.message, isNewUser: false };
+    return { error: lookupError.message, isNewUser: false, userId: null };
   }
 
-  return { error: null, isNewUser: existingUser === null };
+  return { error: null, isNewUser: existingUser === null, userId: data.session.user.id };
 }
 
 /**

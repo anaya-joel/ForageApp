@@ -1,8 +1,8 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { createUserProfile, verifyOtp } from './_auth-store';
-import { setTasteProfileComplete } from './_taste-profile-store';
 
 // Matches the Email OTP length configured in the Supabase project (as
 // stated by the project owner — not independently verified here, no
@@ -14,6 +14,7 @@ type Mode = 'signup' | 'signin';
 
 export default function OtpVerifyScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { email, mode, name, dateOfBirth } = useLocalSearchParams<{
     email: string;
     mode: Mode;
@@ -45,6 +46,11 @@ export default function OtpVerifyScreen() {
       return;
     }
 
+    if (result.userId) {
+      queryClient.setQueryData(['session-user-id'], result.userId);
+    }
+    queryClient.invalidateQueries({ queryKey: ['taste-profile'] });
+
     if (mode === 'signup' && result.isNewUser) {
       const profileResult = await createUserProfile(name ?? '', dateOfBirth ?? '');
       setIsSubmitting(false);
@@ -59,24 +65,12 @@ export default function OtpVerifyScreen() {
     if (mode === 'signup' && !result.isNewUser) {
       setIsSubmitting(false);
       setStatusMessage('Looks like you already have an account — signing you in.');
-      // Interim patch: getTasteProfileComplete() is local-only state, not
-      // yet backed by the taste_profiles Supabase table. Without this, a
-      // returning user would bounce straight back to /welcome on a fresh
-      // install, since that check has nothing else to go on. Remove once
-      // taste profile reads are wired to Supabase.
-      setTasteProfileComplete(true);
       setTimeout(() => router.replace('/'), 1200);
       return;
     }
 
     if (mode === 'signin' && !result.isNewUser) {
       setIsSubmitting(false);
-      // Interim patch: getTasteProfileComplete() is local-only state, not
-      // yet backed by the taste_profiles Supabase table. Without this, a
-      // returning user would bounce straight back to /welcome on a fresh
-      // install, since that check has nothing else to go on. Remove once
-      // taste profile reads are wired to Supabase.
-      setTasteProfileComplete(true);
       router.replace('/');
       return;
     }
