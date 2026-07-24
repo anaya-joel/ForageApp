@@ -13,14 +13,16 @@ import {
   PlusJakartaSans_500Medium,
   PlusJakartaSans_600SemiBold,
 } from '@expo-google-fonts/plus-jakarta-sans';
+import { useQueryClient } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
-import { ChevronRight, Clock, History, SlidersHorizontal } from 'lucide-react-native';
-import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { ChevronRight, Clock, History, LogOut, SlidersHorizontal } from 'lucide-react-native';
+import { Alert, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from './_bottom-nav';
 import { C } from '../data/colors';
 import { F } from '../data/fonts';
+import { supabase } from '../lib/supabase';
 import { getActiveOuting } from './_outing-store';
 import { getUserEmail, getUserName } from './_user-profile-store';
 
@@ -47,6 +49,7 @@ function ProfileRow({
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
 
   const [fontsLoaded, fontError] = useFonts({
     LibreBaskerville_700Bold,
@@ -59,6 +62,17 @@ export default function ProfileScreen() {
 
   const userName = getUserName();
   const userEmail = getUserEmail();
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      queryClient.clear();
+      router.replace('/welcome');
+    } catch (err) {
+      Alert.alert('Sign out failed', 'Please check your connection and try again.');
+    }
+  };
 
   return (
     <View style={styles.screen}>
@@ -92,6 +106,7 @@ export default function ProfileScreen() {
           <ProfileRow Icon={Clock} label="Drafts" onPress={() => router.push('/drafts')} />
           <ProfileRow Icon={History} label="Outing History" onPress={() => router.push('/outing-history')} />
           <ProfileRow Icon={SlidersHorizontal} label="Preferences" onPress={() => router.push('/preferences')} />
+          <ProfileRow Icon={LogOut} label="Sign out" onPress={handleSignOut} />
         </View>
       </ScrollView>
 
