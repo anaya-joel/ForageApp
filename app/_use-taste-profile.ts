@@ -70,17 +70,19 @@ async function saveTasteProfile(input: SaveTasteProfileInput): Promise<void> {
     throw new Error('No authenticated user — cannot save taste profile.');
   }
 
-  const { error } = await supabase.from('taste_profiles').upsert(
-    {
-      user_id: userId,
-      categories: input.categories,
-      vibes: input.vibes,
-      quiz_answers: input.quizAnswers,
-    },
+  const upsertPayload = {
+    user_id: userId,
+    categories: input.categories,
+    vibes: input.vibes,
+    quiz_answers: input.quizAnswers,
+  };
+
+  const result = await supabase.from('taste_profiles').upsert(
+    upsertPayload,
     { onConflict: 'user_id' }
   );
 
-  if (error) throw error;
+  if (result.error) throw result.error;
 }
 
 export function useSaveTasteProfile() {

@@ -38,17 +38,19 @@ import ActiveOutingWarningSheet from './_active-outing-warning-sheet';
 import BottomNav from './_bottom-nav';
 import BuildAroundInfoSheet from './_build-around-info-sheet';
 import { getCatIcon } from './_category-icons';
+import { generatePlan, type PlanInputs } from './_generate-plan';
 import {
   getDrafts,
   getMostRecentDraft,
   getScoutSuggestion,
+  setScoutSuggestion,
   type OutingPlan,
 } from './_outing-store';
 import OverallRatingPrompt from './_overall-rating-prompt';
 import StopRatingSheet from './_stop-rating-sheet';
 import { getCurrentSession } from './_auth-store';
-import { getTasteProfileComplete } from './_taste-profile-store';
 import { useStopCompletion } from './_use-stop-completion';
+import { useTasteProfile } from './_use-taste-profile';
 import { useVenues } from './_use-venues';
 import { getUserName } from './_user-profile-store';
 
@@ -599,7 +601,6 @@ export default function HomeScreen() {
     let cancelled = false;
     getCurrentSession().then(({ session }) => {
       if (cancelled) return;
-      console.log('[home] getCurrentSession resolved', { hasSession: session !== null, userId: session?.user?.id });
       setHasSession(session !== null);
       setSessionChecked(true);
     });
@@ -633,11 +634,47 @@ export default function HomeScreen() {
   }, [fontsLoaded, fontError]);
 
   const { data: venues, isLoading, isError } = useVenues();
+  const { data: tasteProfileData, isLoading: tasteProfileLoading } = useTasteProfile();
   const stopCompletion = useStopCompletion('', venues ?? []);
 
   const [showFabWarning, setShowFabWarning]         = useState(false);
   const [pendingFabRedirect, setPendingFabRedirect]  = useState(false);
   const [buildAroundSheetVisible, setBuildAroundSheetVisible] = useState(false);
+
+  // Scout's Pick starts out seeded with INITIAL_PLAN (see _outing-store.ts)
+  // until it's ever regenerated. Once a real taste profile exists, replace
+  // that seed with a plan generated from the user's actual categories/vibes
+  // — once per cold start, not on every re-render.
+  const scoutRegeneratedRef = useRef(false);
+  // getScoutSuggestion()/setScoutSuggestion() read/write a plain module
+  // variable in _outing-store.ts, not React state — writing it alone doesn't
+  // trigger a re-render, so the regenerated plan is mirrored into real state
+  // here to force the first paint to pick it up immediately.
+  const [regeneratedPlan, setRegeneratedPlan] = useState<OutingPlan | null>(null);
+
+  useEffect(() => {
+    if (scoutRegeneratedRef.current) return;
+    if (!tasteProfileData?.profile || !venues || venues.length === 0) return;
+
+    scoutRegeneratedRef.current = true;
+
+    const inputs: PlanInputs = {
+      categories: tasteProfileData.profile.categories,
+      vibes: tasteProfileData.profile.vibes,
+      // Hardcoded like every other call site — there's no budget UI on this
+      // path yet. Known gap, not solved in this pass.
+      budget: '$$',
+      timeOfDay: new Date(),
+    };
+
+    try {
+      const plan = generatePlan(inputs, venues);
+      setScoutSuggestion(plan);
+      setRegeneratedPlan(plan);
+    } catch (err) {
+      console.warn('[home] failed to regenerate Scout suggestion from taste profile', err);
+    }
+  }, [tasteProfileData?.profile, venues]);
 
   if (!sessionChecked) {
     return (
@@ -654,9 +691,19 @@ export default function HomeScreen() {
     return <Redirect href="/welcome" />;
   }
 
-  console.log('[home] getTasteProfileComplete()', getTasteProfileComplete());
-  if (!getTasteProfileComplete()) {
-    return <Redirect href="/welcome" />;
+  if (tasteProfileLoading) {
+    return (
+      <View style={styles.screen}>
+        <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
+        <View style={styles.loadingState}>
+          <Text style={styles.loadingText}>Scouting the neighborhood. Hang tight.</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (tasteProfileData?.profile == null) {
+    return <Redirect href="/q1" />;
   }
 
   if (!fontsLoaded && !fontError) return null;
@@ -758,7 +805,7 @@ export default function HomeScreen() {
 
         {/* ── STATE A: Scout suggestion ── */}
         {derivedState === 'A' && (
-          <ScoutCard onPress={() => router.push('/outing-preview')} plan={getScoutSuggestion()} />
+          <ScoutCard onPress={() => router.push('/outing-preview')} plan={regeneratedPlan ?? getScoutSuggestion()} />
         )}
 
         {/* ── STATE B: Draft + Scout also suggests ── */}
@@ -772,7 +819,7 @@ export default function HomeScreen() {
               />
             )}
             {/* Full Scout card below the label */}
-            <ScoutCard onPress={() => router.push('/outing-preview')} plan={getScoutSuggestion()} />
+            <ScoutCard onPress={() => router.push('/outing-preview')} plan={regeneratedPlan ?? getScoutSuggestion()} />
           </>
         )}
 
